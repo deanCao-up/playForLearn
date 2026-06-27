@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📜 诗词迷宫 · 小青蛙</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1b4a2e 0%, #2d6a4f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Quicksand', cursive, sans-serif;
+            padding: 16px;
+        }
+
+        .game-wrapper {
+            background: #52b788;
+            padding: 24px 28px 32px;
+            border-radius: 64px 64px 48px 48px;
+            box-shadow: 0 16px 0 #1b4332, 0 20px 40px rgba(0, 0, 0, 0.6);
+            border: 4px solid #409f7a;
+            max-width: 780px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        /* 头部：标题 + 进度 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #d8f3dc;
+            padding: 8px 22px 8px 18px;
+            border-radius: 60px;
+            margin-bottom: 18px;
+            box-shadow: inset 0 -4px 0 #95d5b2, 0 6px 0 #2d6a4f;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1b4332;
+            letter-spacing: 2px;
+        }
+
+        .title span {
+            background: #ffd166;
+            padding: 0 12px;
+            border-radius: 40px;
+            font-size: 1.3rem;
+            color: #1b4332;
+            box-shadow: inset 0 -3px 0 #e6b84c;
+        }
+
+        .progress-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #b7e4c7;
+            padding: 4px 18px 4px 14px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1b4332;
+            box-shadow: inset 0 -3px 0 #74c69d;
+        }
+
+        .progress-box .step-num {
+            background: #2d6a4f;
+            color: #f0fff4;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .progress-box .step-text {
+            min-width: 60px;
+        }
+
+        .star-collect {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 1.4rem;
+        }
+
+        /* 当前诗句展示 */
+        .poem-display {
+            background: #fefae0;
+            border-radius: 40px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #283618;
+            box-shadow: inset 0 -5px 0 #e9edc9, 0 4px 0 #b8c4a0;
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            transition: all 0.3s;
+            border: 2px solid #d4a373;
+        }
+
+        .poem-display .highlight {
+            color: #d00000;
+            background: #ffd6a5;
+            padding: 0 12px;
+            border-radius: 30px;
+        }
+
+        .poem-display .done {
+            color: #2b9348;
+        }
+
+        /* 迷宫网格容器 */
+        .maze-container {
+            position: relative;
+            background: #2d6a4f;
+            border-radius: 32px;
+            padding: 8px;
+            box-shadow: inset 0 0 0 4px #1b4332, 0 10px 0 #1b4332;
+            margin-bottom: 14px;
+            touch-action: none;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .maze-grid {
+            display: grid;
+            gap: 2px;
+            background: #2d6a4f;
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            /* 动态字体大小 */
+            --cell-font-size: 1.8rem;
+        }
+
+        .cell {
+            /* background: #d8f3dc; */
+            background: #ffe5a3;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            transition: all 0.12s ease;
+            position: relative;
+            /* box-shadow: inset 0 -3px 0 #b7e4c7; */
+            box-shadow: inset 0 -3px 0 #d4a373;
+            aspect-ratio: 1 / 1;
+            cursor: pointer;
+            color: #1b4332;
+            overflow: hidden;
+        }
+
+        .cell.wall {
+            background: #5c3d2e;
+            box-shadow: inset 0 -3px 0 #3d291f;
+            cursor: default;
+        }
+
+        .cell.visited-empty {
+            background: #d8f3dc;
+            box-shadow: inset 0 -3px 0 #b7e4c7;
+        }
+
+        /* 地雷格子 */
+        .cell.mine {
+            position: relative;
+            overflow: visible;
+        }
+
+        .cell.mine .mine-icon {
+            font-size: 2.5rem !important;
+            /* animation: minePop 1s ease-out; */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ef233c !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* @keyframes minePop {
+            0% { transform: scale(0); }
+            60% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        } */
+
+        .cell.poem {
+            background: #ffe5a3;
+            box-shadow: inset 0 -3px 0 #d4a373;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .cell.poem.visited-correct {
+            background: #b7e4c7;
+            box-shadow: inset 0 -3px 0 #52b788;
+        }
+
+        .cell.poem.error-cell {
+            box-shadow:
+                inset 0 0 0 4px #ef233c,
+                inset 0 0 0 8px rgba(239, 35, 60, 0.6),
+                inset 0 0 0 12px rgba(239, 35, 60, 0.3),
+                inset 0 -3px 0 #d4a373;
+            animation: errorPulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes errorPulse {
+
+            0%,
+            100% {
+                box-shadow:
+                    inset 0 0 0 4px #ef233c,
+                    inset 0 0 0 8px rgba(239, 35, 60, 0.6),
+                    inset 0 0 0 12px rgba(239, 35, 60, 0.3),
+                    inset 0 -3px 0 #d4a373;
+            }
+
+            50% {
+                box-shadow:
+                    inset 0 0 0 6px #ef233c,
+                    inset 0 0 0 12px rgba(239, 35, 60, 0.5),
+                    inset 0 0 0 18px rgba(239, 35, 60, 0.2),
+                    inset 0 -3px 0 #d4a373;
+            }
+        }
+
+        .cell.poem.wrong-flash {
+            animation: wrongFlash 0.5s ease;
+        }
+
+        @keyframes wrongFlash {
+
+            0%,
+            100% {
+                background: #ffe5a3;
+            }
+
+            25% {
+                background: #f94144;
+                transform: scale(0.92);
+            }
+
+            75% {
+                background: #f94144;
+                transform: scale(0.92);
+            }
+        }
+
+        .cell.start {
+            background: #a8dadc;
+            box-shadow: inset 0 -3px 0 #6bb3b8;
+        }
+
+        .cell.end {
+            background: #f9c74f;
+            box-shadow: inset 0 -3px 0 #d4a02b;
+        }
+
+        .cell .frog {
+            font-size: 1.4rem;
+            line-height: 1;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+            transition: transform 0.15s;
+            z-index: 2;
+            position: relative;
+            animation: frogIdle 1.2s ease-in-out infinite;
+        }
+
+        @keyframes frogIdle {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-4px) rotate(-3deg);
+            }
+        }
+
+        .cell .frog.jump {
+            animation: frogJump 0.25s ease;
+        }
+
+        @keyframes frogJump {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+
+            40% {
+                transform: translateY(-16px) scale(1.2);
+            }
+
+            100% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .cell .poem-label {
+            font-size: var(--cell-font-size);
+            font-weight: 700;
+            color: #283618;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 30px;
+            padding: 1px 4px;
+            line-height: 1.3;
+            backdrop-filter: blur(2px);
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .cell .poem-label.done-label {
+            color: #2b9348;
+            background: rgba(183, 228, 199, 0.8);
+        }
+
+        .cell .teleport-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            pointer-events: none;
+            animation: teleportAnim 1.2s ease-out forwards;
+            z-index: 3;
+        }
+
+        @keyframes teleportAnim {
+            0% {
+                box-shadow:
+                    inset 0 0 0 0 rgba(72, 202, 228, 0.8),
+                    inset 0 0 20px 10px rgba(72, 202, 228, 0.5);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow:
+                    inset 0 0 0 20px rgba(72, 202, 228, 0.3),
+                    inset 0 0 40px 20px rgba(72, 202, 228, 0.2);
+                transform: scale(0.8);
+            }
+
+            100% {
+                box-shadow:
+                    inset 0 0 0 40px rgba(72, 202, 228, 0),
+                    inset 0 0 60px 30px rgba(72, 202, 228, 0);
+                transform: scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* 星星装饰 */
+        .star-icon {
+            font-size: 1.2rem;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+        }
+
+        /* 控制区 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .ctrl-btn {
+            background: #fefae0;
+            border: none;
+            border-radius: 60px;
+            width: 60px;
+            height: 60px;
+            font-size: 2.2rem;
+            box-shadow: 0 6px 0 #b8c4a0, 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.08s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            color: #283618;
+        }
+
+        .ctrl-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 #b8c4a0;
+        }
+
+        .ctrl-btn.reset-btn {
+            background: #f8e5d6;
+            box-shadow: 0 6px 0 #d4a373;
+            width: 70px;
+            font-size: 1.4rem;
+            gap: 4px;
+        }
+
+        .ctrl-btn.back-btn {
+            background: #d8f3dc;
+            box-shadow: 0 6px 0 #95d5b2;
+            width: 70px;
+            font-size: 1.4rem;
+            gap: 4px;
+        }
+
+        .ctrl-btn:disabled {
+            opacity: 0.5;
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b8c4a0;
+            pointer-events: none;
+        }
+
+        .ctrl-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 胜利弹窗 */
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .win-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .win-card {
+            background: #fefae0;
+            border-radius: 72px;
+            padding: 40px 48px 48px;
+            max-width: 540px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 24px 0 #b8c4a0, 0 40px 80px rgba(0, 0, 0, 0.5);
+            border: 4px solid #d4a373;
+            animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .win-card .big-frog {
+            font-size: 5rem;
+            margin-bottom: 4px;
+        }
+
+        .win-card h2 {
+            font-size: 2.4rem;
+            color: #1b4332;
+            margin: 8px 0 4px;
+            letter-spacing: 2px;
+        }
+
+        .win-card .poem-full {
+            background: #d8f3dc;
+            border-radius: 40px;
+            padding: 16px 20px;
+            margin: 14px 0 20px;
+            font-size: 1.3rem;
+            line-height: 2;
+            color: #1b4332;
+            text-align: left;
+            border: 2px solid #52b788;
+            box-shadow: inset 0 -4px 0 #95d5b2;
+        }
+
+        .win-card .poem-full .line-num {
+            display: inline-block;
+            width: 28px;
+            color: #2d6a4f;
+            font-weight: 700;
+        }
+
+        .win-btn {
+            background: #ffd166;
+            border: none;
+            border-radius: 60px;
+            padding: 14px 40px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1b4332;
+            box-shadow: 0 8px 0 #d4a02b;
+            cursor: pointer;
+            transition: all 0.08s ease;
+            font-family: inherit;
+            touch-action: manipulation;
+        }
+
+        .win-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #d4a02b;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .game-wrapper {
+                padding: 16px 14px 20px;
+                border-radius: 40px;
+            }
+
+            .title {
+                font-size: 1.2rem;
+            }
+
+            .title span {
+                font-size: 1rem;
+            }
+
+            .progress-box {
+                font-size: 1rem;
+                padding: 2px 12px 2px 10px;
+            }
+
+            .progress-box .step-num {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
+            }
+
+            .poem-display {
+                font-size: 1.2rem;
+                padding: 8px 12px;
+                min-height: 52px;
+            }
+
+            .cell {
+                font-size: 0.9rem;
+                border-radius: 4px;
+            }
+
+            .cell .frog {
+                font-size: 1rem;
+            }
+
+            .cell .poem-label {
+                font-size: 0.7rem;
+            }
+
+            .ctrl-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8rem;
+            }
+
+            .ctrl-btn.reset-btn {
+                width: 60px;
+                font-size: 1.2rem;
+            }
+
+            .win-card {
+                padding: 28px 20px 32px;
+            }
+
+            .win-card h2 {
+                font-size: 1.8rem;
+            }
+
+            .win-card .poem-full {
+                font-size: 1rem;
+                padding: 12px 14px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .cell .frog {
+                font-size: 0.9rem;
+            }
+
+            .cell .poem-label {
+                font-size: 0.6rem;
+                padding: 0 2px;
+            }
+
+            .poem-display {
+                font-size: 1rem;
+                min-height: 44px;
+            }
+
+            .ctrl-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.5rem;
+            }
+
+            .ctrl-btn.reset-btn {
+                width: 52px;
+                font-size: 1rem;
+            }
+        }
+
+        /* 错误提示对话框 */
+        .error-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .error-overlay.show {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .error-dialog {
+            background: rgba(20, 20, 20, 0.92);
+            padding: 28px 36px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 420px;
+            border: 2px solid rgba(239, 35, 60, 0.6);
+            animation: errorDialogIn 0.3s ease-out;
+        }
+
+        @keyframes errorDialogIn {
+            0% {
+                transform: scale(0.6);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .error-dialog .error-icon {
+            font-size: 3rem;
+            margin-bottom: 14px;
+        }
+
+        .error-dialog p {
+            font-size: 1.15rem;
+            color: #fff;
+            margin: 0;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        /* 提示小标签 */
+        .hint-text {
+            text-align: center;
+            color: #d8f3dc;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 6px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        /* 地雷提示框（深色透明，自动关闭） */
+        .mine-toast {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mine-toast.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .mine-toast-content {
+            background: rgba(20, 20, 20, 0.92);
+            color: #fff;
+            padding: 28px 36px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(239, 35, 60, 0.6);
+            max-width: 420px;
+            animation: mineToastIn 0.3s ease-out;
+        }
+
+        .mine-toast-icon {
+            font-size: 3.5rem;
+            margin-bottom: 14px;
+            animation: mineShake 0.6s ease-in-out infinite;
+        }
+
+        .mine-toast-content p {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.5;
+        }
+
+        @keyframes mineToastIn {
+            0% {
+                transform: scale(0.6);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes mineShake {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-10deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .hint-text span {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 14px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        /* 收集到的诗句列表（迷你） */
+        .collected-list {
+            display: none;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 6px;
+        }
+
+        .collected-list .chip {
+            background: #2d6a4f;
+            color: #f0fff4;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        .collected-list .chip.done {
+            opacity: 1;
+            background: #52b788;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-wrapper" id="app">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="title">
+                <span id="titleIcon">📜</span> <span>诗词迷宫</span>
+            </div>
+            <div class="progress-box">
+                <span class="step-num" id="stepNum">①</span>
+                <span class="step-text" id="stepText">第 1 / 6 句</span>
+                <span class="star-collect">⭐ <span id="starCount">0</span></span>
+            </div>
+        </div>
+
+        <!-- 当前诗句 -->
+        <div class="poem-display" id="poemDisplay">
+            <span id="poemDisplayIcon">📜</span> <span>找到诗句 <span class="highlight"
+                    id="targetPoem">河水清清天气晴</span></span>
+        </div>
+
+        <!-- 迷宫 -->
+        <div class="maze-container">
+            <div class="maze-grid" id="mazeGrid"></div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <div class="ctrl-group">
+                <button class="ctrl-btn" id="btnUp" aria-label="上">⬆️</button>
+            </div>
+            <div class="ctrl-group">
+                <button class="ctrl-btn" id="btnLeft" aria-label="左">⬅️</button>
+                <button class="ctrl-btn" id="btnDown" aria-label="下">⬇️</button>
+                <button class="ctrl-btn" id="btnRight" aria-label="右">➡️</button>
+            </div>
+            <div class="ctrl-group">
+                <button class="ctrl-btn reset-btn" id="btnReset">🔄 重来</button>
+            </div>
+            <div class="ctrl-group">
+                <button class="ctrl-btn back-btn" id="btnBack">🏠 返回</button>
+            </div>
+        </div>
+
+        <div class="hint-text">
+            <span>⬆️⬇️⬅️➡️ 控制小青蛙 · 按顺序收集诗句</span>
+        </div>
+
+        <div class="collected-list" id="collectedList"></div>
+    </div>
+
+    <!-- 胜利弹窗 -->
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-card">
+            <div class="big-frog" id="winIcon">📜🎉</div>
+            <h2>🌟 太棒啦！ 🌟</h2>
+            <p style="color:#283618;font-size:1.1rem;margin:0 0 6px;">你按顺序走完了所有诗句！</p>
+            <div class="poem-full" id="winPoemFull">
+                <div><span class="line-num">①</span> 河水清清天气晴</div>
+                <div><span class="line-num">②</span> 小小青蛙大眼睛</div>
+                <div><span class="line-num">③</span> 保护禾苗吃害虫</div>
+                <div><span class="line-num">④</span> 做了不少好事情</div>
+                <div><span class="line-num">⑤</span> 请你爱护小青蛙</div>
+                <div><span class="line-num">⑥</span> 好让禾苗不生病</div>
+            </div>
+            <button class="win-btn" id="btnReplay"><span id="replayIcon">📜</span> 再玩一次</button>
+        </div>
+    </div>
+
+    <!-- 错误提示对话框 -->
+    <div class="error-overlay" id="errorOverlay">
+        <div class="error-dialog">
+            <div class="error-icon">❌</div>
+            <p>走错啦，您被传送回迷宫入口了！</p>
+        </div>
+    </div>
+
+    <!-- 地雷提示框（深色透明，2秒自动关闭） -->
+    <div class="mine-toast" id="mineToast">
+        <div class="mine-toast-content">
+            <div class="mine-toast-icon">💣</div>
+            <p>不小心遇到地雷，您被传送回迷宫入口了</p>
+        </div>
+    </div>
+
+    <script src="poems-data.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            // ========== 游戏配置常量 ==========
+            // MINE_PERCENTAGE: 地雷占空白格子数量的百分比
+            // 范围: 0.0 (0%) 到 1.0 (100%)
+            // 建议值: 0.2 ~ 0.4 (20% ~ 40%)
+            // 过高会导致游戏难度过大，过低则缺乏挑战性
+            const MINE_PERCENTAGE = 0.3;
+
+            const DataManager = {
+                poems: [],
+                poemChars: [],
+                totalChars: 0,
+                title: '',
+                dynasty: '',
+                author: '',
+                icon: '',
+                poemKey: '',
+
+                init: function () {
+                    try {
+                        if (typeof poems === 'undefined' || !poems) {
+                            throw new Error('诗词数据未加载');
+                        }
+
+                        // 优先从URL参数获取poemKey，其次从全局变量，最后默认
+                        let poemKey = 'XiaoQingWa';
+                        try {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const urlPoemKey = urlParams.get('poemKey');
+                            if (urlPoemKey && poems.has(urlPoemKey)) {
+                                poemKey = urlPoemKey;
+                            } else if (currentPoemKey && poems.has(currentPoemKey)) {
+                                poemKey = currentPoemKey;
+                            }
+                        } catch (e) {
+                            // URL参数解析失败，使用默认值
+                            if (currentPoemKey && poems.has(currentPoemKey)) {
+                                poemKey = currentPoemKey;
+                            }
+                        }
+
+                        const poemData = poems.get(poemKey);
+
+                        if (!poemData) {
+                            throw new Error('未找到诗词数据: ' + poemKey);
+                        }
+
+                        if (!poemData.lines || !Array.isArray(poemData.lines) || poemData.lines.length === 0) {
+                            throw new Error('诗词数据格式错误：lines字段为空或无效');
+                        }
+
+                        this.poems = poemData.lines.map((text, index) => ({
+                            id: index + 1,
+                            text: text,
+                            emoji: this.getEmojiForIndex(index)
+                        }));
+
+                        this.poemChars = poemData.lines.join('').split('').filter(char => !/[，。！？、；：]/.test(char));
+                        this.totalChars = this.poemChars.length;
+                        this.title = poemData.title || '';
+                        this.dynasty = poemData.dynasty || '';
+                        this.author = poemData.author || '';
+                        this.icon = poemData.icon || '🐸';
+                        this.poemKey = poemKey;
+
+                        console.log('诗词数据加载成功: ' + this.title + ' (' + this.totalChars + '字)');
+                        return true;
+                    } catch (error) {
+                        console.error('诗词数据加载失败:', error.message);
+                        return false;
+                    }
+                },
+
+                getIcon: function () {
+                    return this.icon;
+                },
+
+                getEmojiForIndex: function (index) {
+                    const emojis = ['🌊', '👀', '🌾', '✨', '💚', '🌿', '🌸', '🌺', '🌻', '🍀'];
+                    return emojis[index % emojis.length];
+                },
+
+                getPoemLine: function (index) {
+                    return this.poems[index] || null;
+                },
+
+                getChar: function (index) {
+                    return this.poemChars[index] || '';
+                },
+
+                getTotalLines: function () {
+                    return this.poems.length;
+                },
+
+                getTotalChars: function () {
+                    return this.totalChars;
+                }
+            };
+
+            const MazeGenerator = {
+                ROWS: 8,
+                COLS: 8,
+                startPos: { row: 0, col: 0 },
+                endPos: { row: 7, col: 7 },
+
+                generate: function (totalChars) {
+                    let size = this.ROWS;
+
+                    while (size <= 14) {
+                        const maxAvailable = size * size - 1;
+                        if (totalChars > maxAvailable * 0.75) {
+                            size += 2;
+                            continue;
+                        }
+
+                        for (let attempt = 0; attempt < 1000; attempt++) {
+                            const map = this.createEmptyMap(size, size);
+                            if (this.generateSnakePath(map, totalChars, size, size)) {
+                                this.ROWS = size;
+                                this.COLS = size;
+                                this.endPos = { row: size - 1, col: size - 1 };
+                                return map;
+                            }
+                        }
+
+                        size += 2;
+                    }
+
+                    console.error('地图生成失败');
+                    return null;
+                },
+
+                createEmptyMap: function (rows, cols) {
+                    const map = [];
+                    for (let r = 0; r < rows; r++) {
+                        map[r] = [];
+                        for (let c = 0; c < cols; c++) {
+                            map[r][c] = 0;
+                        }
+                    }
+                    map[0][0] = 1;
+                    return map;
+                },
+
+                generateSnakePath: function (map, totalChars, rows, cols) {
+                    const path = [];
+                    const grid = [];
+
+                    for (let r = 0; r < rows; r++) {
+                        grid[r] = [];
+                        for (let c = 0; c < cols; c++) {
+                            grid[r][c] = false;
+                        }
+                    }
+                    grid[0][0] = true;
+
+                    const firstPos = Math.random() < 0.5
+                        ? { row: 0, col: 1 }
+                        : { row: 1, col: 0 };
+
+                    if (!this.generateValidPath(grid, firstPos, totalChars, path, rows, cols)) {
+                        return false;
+                    }
+
+                    for (let i = 0; i < path.length; i++) {
+                        const p = path[i];
+                        map[p.row][p.col] = i + 10;
+                    }
+
+                    return true;
+                },
+
+                generateValidPath: function (grid, start, steps, path, rows, cols) {
+                    let r = start.row, c = start.col;
+                    path.push({ row: r, col: c });
+                    grid[r][c] = true;
+
+                    let lastDir = -1;
+                    let sameDirCount = 0;
+                    const dirs = [{ dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 0, dc: -1 }, { dr: -1, dc: 0 }];
+
+                    for (let step = 1; step < steps; step++) {
+                        const candidates = [];
+
+                        for (let dIdx = 0; dIdx < 4; dIdx++) {
+                            const d = dirs[dIdx];
+                            const nr = r + d.dr;
+                            const nc = c + d.dc;
+
+                            if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+                            if (grid[nr][nc]) continue;
+
+                            const newSame = (dIdx === lastDir) ? sameDirCount + 1 : 1;
+                            if (newSame > 2) continue;
+
+                            let neighborCount = 0;
+                            for (let ndIdx = 0; ndIdx < 4; ndIdx++) {
+                                const nd = dirs[ndIdx];
+                                const nnr = nr + nd.dr;
+                                const nnc = nc + nd.dc;
+                                if (nnr >= 0 && nnr < rows && nnc >= 0 && nnc < cols && !grid[nnr][nnc]) {
+                                    neighborCount++;
+                                }
+                            }
+
+                            candidates.push({ dr: d.dr, dc: d.dc, dir: dIdx, neighbors: neighborCount });
+                        }
+
+                        if (candidates.length === 0) {
+                            return false;
+                        }
+
+                        candidates.sort((a, b) => {
+                            if (step < steps * 0.8) {
+                                return b.neighbors - a.neighbors;
+                            } else {
+                                return a.neighbors - b.neighbors;
+                            }
+                        });
+
+                        const pool = candidates.slice(0, Math.min(2, candidates.length));
+                        const chosen = pool[Math.floor(Math.random() * pool.length)];
+
+                        r += chosen.dr;
+                        c += chosen.dc;
+                        path.push({ row: r, col: c });
+                        grid[r][c] = true;
+                        lastDir = chosen.dir;
+                        sameDirCount = (chosen.dir === lastDir) ? sameDirCount + 1 : 1;
+                    }
+
+                    return true;
+                },
+
+                generateMines: function (map) {
+                    const emptyCells = [];
+                    for (let r = 0; r < this.ROWS; r++) {
+                        for (let c = 0; c < this.COLS; c++) {
+                            if (map[r][c] === 0 && !this.isSafeZone(r, c)) {
+                                emptyCells.push({ row: r, col: c });
+                            }
+                        }
+                    }
+
+                    if (emptyCells.length < 2) {
+                        return [];
+                    }
+
+                    const mineCount = Math.floor(emptyCells.length * MINE_PERCENTAGE);
+                    const shuffled = this.shuffleArray(emptyCells);
+                    return shuffled.slice(0, mineCount);
+                },
+
+                isSafeZone: function (row, col) {
+                    return row >= 0 && row <= 2 && col >= 0 && col <= 2;
+                },
+
+                shuffleArray: function (arr) {
+                    const result = [...arr];
+                    for (let i = result.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [result[i], result[j]] = [result[j], result[i]];
+                    }
+                    return result;
+                },
+
+                deepCopy: function (map) {
+                    return map.map(row => [...row]);
+                }
+            };
+
+            const GameState = {
+                map: [],
+                playerRow: 0,
+                playerCol: 0,
+                currentStep: 0,
+                visited: [],
+                visitedCells: [],
+                isWin: false,
+                isAnimating: false,
+                starCount: 0,
+                isErrorState: false,
+                errorCell: null,
+                lastCorrectCell: null,
+                mines: [],
+                triggeredMine: null,
+
+                reset: function (map) {
+                    this.map = MazeGenerator.deepCopy(map);
+                    this.playerRow = MazeGenerator.startPos.row;
+                    this.playerCol = MazeGenerator.startPos.col;
+                    this.currentStep = 0;
+                    this.visited = [];
+                    this.visitedCells = ['' + this.playerRow + '-' + this.playerCol];
+                    this.isWin = false;
+                    this.isAnimating = false;
+                    this.starCount = 0;
+                    this.isErrorState = false;
+                    this.errorCell = null;
+                    this.lastCorrectCell = null;
+                    this.mines = MazeGenerator.generateMines(map);
+                    this.triggeredMine = null;
+                },
+
+                moveTo: function (row, col) {
+                    this.playerRow = row;
+                    this.playerCol = col;
+                    const cellKey = '' + row + '-' + col;
+                    if (!this.visitedCells.includes(cellKey)) {
+                        this.visitedCells.push(cellKey);
+                    }
+                },
+
+                markVisited: function (charIndex) {
+                    this.visited.push(charIndex);
+                    this.currentStep++;
+                    this.starCount++;
+                },
+
+                setErrorState: function (errorRow, errorCol) {
+                    this.isErrorState = true;
+                    this.errorCell = { row: errorRow, col: errorCol };
+                    this.lastCorrectCell = { row: this.playerRow, col: this.playerCol };
+                },
+
+                clearErrorState: function () {
+                    this.isErrorState = false;
+                    this.errorCell = null;
+                    this.lastCorrectCell = null;
+                },
+
+                triggerMine: function (row, col) {
+                    this.triggeredMine = { row: row, col: col };
+                },
+
+                clearTriggeredMine: function () {
+                    this.triggeredMine = null;
+                },
+
+                setWin: function () {
+                    this.isWin = true;
+                },
+
+                isOnMine: function (row, col) {
+                    return this.mines.some(m => m.row === row && m.col === col);
+                },
+
+                isVisitedCell: function (row, col) {
+                    return this.visitedCells.includes('' + row + '-' + col);
+                },
+
+                isVisitedChar: function (charIndex) {
+                    return this.visited.includes(charIndex);
+                },
+
+                getTargetCharIndex: function () {
+                    return this.currentStep;
+                }
+            };
+
+            const UIRenderer = {
+                gridEl: null,
+                stepNumEl: null,
+                stepTextEl: null,
+                targetPoemEl: null,
+                poemDisplayEl: null,
+                starCountEl: null,
+                collectedListEl: null,
+                winOverlay: null,
+                winPoemFull: null,
+                errorOverlay: null,
+                mineToast: null,
+
+                init: function () {
+                    this.gridEl = document.getElementById('mazeGrid');
+                    this.stepNumEl = document.getElementById('stepNum');
+                    this.stepTextEl = document.getElementById('stepText');
+                    this.targetPoemEl = document.getElementById('targetPoem');
+                    this.poemDisplayEl = document.getElementById('poemDisplay');
+                    this.starCountEl = document.getElementById('starCount');
+                    this.collectedListEl = document.getElementById('collectedList');
+                    this.winOverlay = document.getElementById('winOverlay');
+                    this.winPoemFull = document.getElementById('winPoemFull');
+                    this.errorOverlay = document.getElementById('errorOverlay');
+                    this.mineToast = document.getElementById('mineToast');
+                    this.titleIconEl = document.getElementById('titleIcon');
+                    this.winIconEl = document.getElementById('winIcon');
+                    this.replayIconEl = document.getElementById('replayIcon');
+
+                    this.gridEl.style.gridTemplateColumns = 'repeat(' + MazeGenerator.COLS + ', 1fr)';
+                },
+
+                updateIcons: function () {
+                    const icon = DataManager.getIcon();
+                    if (this.titleIconEl) {
+                        this.titleIconEl.textContent = icon;
+                    }
+                    if (this.winIconEl) {
+                        this.winIconEl.textContent = icon + '🎉';
+                    }
+                    if (this.replayIconEl) {
+                        this.replayIconEl.textContent = icon;
+                    }
+                },
+
+                render: function () {
+                    this.renderGrid();
+                    this.updateUI();
+                    this.updateCollectedList();
+                },
+
+                renderGrid: function () {
+                    this.gridEl.innerHTML = '';
+                    this.gridEl.style.gridTemplateColumns = 'repeat(' + MazeGenerator.COLS + ', 1fr)';
+
+                    // 根据迷宫尺寸动态设置字体大小
+                    const gridSize = MazeGenerator.ROWS;
+                    if (gridSize <= 8) {
+                        this.gridEl.style.setProperty('--cell-font-size', '1.8rem');
+                    } else if (gridSize <= 10) {
+                        this.gridEl.style.setProperty('--cell-font-size', '1.4rem');
+                    } else if (gridSize <= 12) {
+                        this.gridEl.style.setProperty('--cell-font-size', '1.1rem');
+                    } else {
+                        this.gridEl.style.setProperty('--cell-font-size', '0.9rem');
+                    }
+
+                    for (let r = 0; r < MazeGenerator.ROWS; r++) {
+                        for (let c = 0; c < MazeGenerator.COLS; c++) {
+                            const cell = this.createCell(r, c);
+                            this.gridEl.appendChild(cell);
+                        }
+                    }
+                },
+
+                createCell: function (row, col) {
+                    const cell = document.createElement('div');
+                    const val = GameState.map[row][col];
+                    cell.className = this.getCellClass(row, col, val);
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+
+                    const content = this.getCellContent(row, col, val);
+                    if (content) {
+                        const span = document.createElement('span');
+                        span.textContent = content;
+                        span.className = this.getContentClass(row, col, val, content);
+                        cell.appendChild(span);
+                    }
+
+                    if (GameState.playerRow === row && GameState.playerCol === col && !GameState.isWin) {
+                        const frog = document.createElement('span');
+                        frog.className = 'frog';
+                        frog.textContent = DataManager.getIcon();
+                        cell.appendChild(frog);
+                        cell.dataset.frog = 'true';
+                    }
+
+                    cell.addEventListener('click', () => {
+                        if (GameState.isWin || GameState.isAnimating) return;
+                        const tr = parseInt(cell.dataset.row);
+                        const tc = parseInt(cell.dataset.col);
+                        const dr = Math.abs(tr - GameState.playerRow);
+                        const dc = Math.abs(tc - GameState.playerCol);
+                        if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+                            GameController.tryMove(tr, tc);
+                        }
+                    });
+
+                    return cell;
+                },
+
+                getCellClass: function (row, col, val) {
+                    const classes = ['cell'];
+                    const cellKey = '' + row + '-' + col;
+
+                    if (GameState.isVisitedCell(row, col)) {
+                        classes.push('revealed');
+                    }
+
+                    const isMineCell = GameState.isOnMine(row, col);
+                    if (GameState.triggeredMine && GameState.triggeredMine.row === row && GameState.triggeredMine.col === col) {
+                        classes.push('mine');
+                    } else if (isMineCell && GameState.isVisitedCell(row, col)) {
+                        classes.push('mine');
+                    }
+
+                    if (val === 0) {
+                        if (GameState.isVisitedCell(row, col)) {
+                            classes.push('visited-empty');
+                        }
+                    } else if (val === 1) {
+                        classes.push('start');
+                    } else if (val >= 10) {
+                        classes.push('poem');
+                        const idx = val - 10;
+                        if (GameState.isVisitedChar(idx)) {
+                            classes.push('visited-correct');
+                        }
+                        if (GameState.isErrorState && GameState.errorCell &&
+                            GameState.errorCell.row === row && GameState.errorCell.col === col) {
+                            classes.push('error-cell');
+                        }
+                    }
+
+                    return classes.join(' ');
+                },
+
+                getCellContent: function (row, col, val) {
+                    if (GameState.triggeredMine && GameState.triggeredMine.row === row && GameState.triggeredMine.col === col) {
+                        return '💣';
+                    }
+
+                    const cellKey = '' + row + '-' + col;
+                    const isMineCell = GameState.isOnMine(row, col);
+                    if (isMineCell && GameState.isVisitedCell(row, col)) {
+                        return '💣';
+                    }
+
+                    if (val === 0) return '';
+                    if (val === 1) return '🚩';
+                    if (val >= 10) {
+                        const idx = val - 10;
+                        if (GameState.isVisitedChar(idx)) {
+                            return DataManager.getChar(idx);
+                        }
+                        if (GameState.isErrorState && GameState.errorCell &&
+                            GameState.errorCell.row === row && GameState.errorCell.col === col) {
+                            return DataManager.getChar(idx);
+                        }
+                    }
+                    return '';
+                },
+
+                getContentClass: function (row, col, val, content) {
+                    const isBomb = content.length > 0 && content.codePointAt(0) === 0x1F4A3;
+                    if (isBomb) {
+                        return 'mine-icon';
+                    } else if (val >= 10 && GameState.isVisitedChar(val - 10)) {
+                        return 'poem-label done-label';
+                    } else if (val >= 10) {
+                        return 'poem-label';
+                    } else {
+                        return 'content-span';
+                    }
+                },
+
+                updateUI: function () {
+                    const totalChars = DataManager.getTotalChars();
+                    const icon = DataManager.getIcon();
+
+                    if (GameState.currentStep < totalChars) {
+                        const targetChar = DataManager.getChar(GameState.currentStep);
+                        this.stepNumEl.textContent = '' + (GameState.currentStep + 1);
+                        this.stepTextEl.textContent = '第 ' + (GameState.currentStep + 1) + ' / ' + totalChars + ' 个字';
+                        this.targetPoemEl.textContent = targetChar;
+                        this.poemDisplayEl.innerHTML =
+                            '<span>' + icon + ' 找第 <span class="highlight">' + (GameState.currentStep + 1) + '</span> 个字：' + targetChar + '</span>';
+                    } else if (GameState.isWin) {
+                        this.stepNumEl.textContent = '🎉';
+                        this.stepTextEl.textContent = '完成!';
+                        this.targetPoemEl.textContent = '🎊 太棒啦！';
+                        this.poemDisplayEl.innerHTML = '<span>🎉 ' + totalChars + '个字全部收集完成！ 🎉</span>';
+                    } else {
+                        this.stepNumEl.textContent = '✨';
+                        this.stepTextEl.textContent = '准备...';
+                        this.targetPoemEl.textContent = icon + ' 出发吧！';
+                        this.poemDisplayEl.innerHTML = '<span>' + icon + ' 按顺序走遍' + totalChars + '个字吧！</span>';
+                    }
+
+                    this.starCountEl.textContent = GameState.starCount;
+                },
+
+                updateCollectedList: function () {
+                    this.collectedListEl.innerHTML = '';
+                    const totalChars = DataManager.getTotalChars();
+
+                    for (let i = 0; i < totalChars; i++) {
+                        const chip = document.createElement('span');
+                        chip.className = 'chip' + (GameState.isVisitedChar(i) ? ' done' : '');
+                        chip.textContent = GameState.isVisitedChar(i) ? DataManager.getChar(i) : (i + 1);
+                        this.collectedListEl.appendChild(chip);
+                    }
+                },
+
+                showWin: function () {
+                    this.winOverlay.classList.add('show');
+                    this.winPoemFull.innerHTML = DataManager.poems.map((p, i) =>
+                        '<div><span class="line-num">' + (i + 1) + '</span> ' + p.emoji + ' ' + p.text + '</div>'
+                    ).join('');
+                },
+
+                hideWin: function () {
+                    this.winOverlay.classList.remove('show');
+                },
+
+                showError: function () {
+                    this.errorOverlay.classList.add('show');
+                },
+
+                hideError: function () {
+                    this.errorOverlay.classList.remove('show');
+                },
+
+                showMineToast: function () {
+                    this.mineToast.classList.add('show');
+                },
+
+                hideMineToast: function () {
+                    this.mineToast.classList.remove('show');
+                },
+
+                showMessage: function (msg) {
+                    this.poemDisplayEl.innerHTML = '<span style="color:#d00000;font-weight:700;">' + msg + '</span>';
+                },
+
+                showTargetMessage: function () {
+                    const targetChar = DataManager.getChar(GameState.currentStep);
+                    const icon = DataManager.getIcon();
+                    if (targetChar) {
+                        this.poemDisplayEl.innerHTML =
+                            '<span>' + icon + ' 找第 <span class="highlight">' + (GameState.currentStep + 1) + '</span> 个字：' + targetChar + '</span>';
+                    } else {
+                        this.poemDisplayEl.innerHTML = '<span>' + icon + ' 继续前进吧！</span>';
+                    }
+                },
+
+                showJumpAnimation: function () {
+                    const cells = this.gridEl.querySelectorAll('.cell');
+                    cells.forEach(cell => {
+                        const r = parseInt(cell.dataset.row);
+                        const c = parseInt(cell.dataset.col);
+                        if (r === GameState.playerRow && c === GameState.playerCol) {
+                            const frog = cell.querySelector('.frog');
+                            if (frog) {
+                                frog.classList.remove('jump');
+                                void frog.offsetWidth;
+                                frog.classList.add('jump');
+                                setTimeout(() => frog.classList.remove('jump'), 300);
+                            }
+                        }
+                    });
+                },
+
+                showTeleportAnimation: function (row, col) {
+                    const cells = this.gridEl.querySelectorAll('.cell');
+                    cells.forEach(cell => {
+                        const r = parseInt(cell.dataset.row);
+                        const c = parseInt(cell.dataset.col);
+                        if (r === row && c === col) {
+                            const teleport = document.createElement('span');
+                            teleport.className = 'teleport-circle';
+                            cell.appendChild(teleport);
+                        }
+                    });
+                },
+
+                clearTeleportAnimations: function () {
+                    const teleportCircles = document.querySelectorAll('.teleport-circle');
+                    teleportCircles.forEach(el => el.remove());
+                }
+            };
+
+            const GameController = {
+                msgTimer: null,
+                mineToastTimer: null,
+
+                init: function () {
+                    if (!DataManager.init()) {
+                        UIRenderer.showMessage('诗词数据加载失败，请检查数据文件');
+                        return;
+                    }
+
+                    UIRenderer.init();
+                    UIRenderer.updateIcons();
+
+                    const map = MazeGenerator.generate(DataManager.getTotalChars());
+                    if (!map) {
+                        UIRenderer.showMessage('地图生成失败，请刷新重试');
+                        return;
+                    }
+
+                    GameState.reset(map);
+                    UIRenderer.render();
+
+                    this.bindEvents();
+
+                    const title = DataManager.title;
+                    const titleSpan = document.querySelector('.title span');
+                    if (titleSpan) {
+                        titleSpan.textContent = title || '诗词迷宫';
+                    }
+
+                    console.log('游戏初始化完成');
+                },
+
+                bindEvents: function () {
+                    document.addEventListener('keydown', this.handleKey.bind(this));
+
+                    document.getElementById('btnUp').addEventListener('click', () => {
+                        this.tryMove(GameState.playerRow - 1, GameState.playerCol);
+                    });
+                    document.getElementById('btnDown').addEventListener('click', () => {
+                        this.tryMove(GameState.playerRow + 1, GameState.playerCol);
+                    });
+                    document.getElementById('btnLeft').addEventListener('click', () => {
+                        this.tryMove(GameState.playerRow, GameState.playerCol - 1);
+                    });
+                    document.getElementById('btnRight').addEventListener('click', () => {
+                        this.tryMove(GameState.playerRow, GameState.playerCol + 1);
+                    });
+                    document.getElementById('btnReset').addEventListener('click', this.resetGame.bind(this));
+                    document.getElementById('btnBack').addEventListener('click', this.goBack.bind(this));
+                    document.getElementById('btnReplay').addEventListener('click', this.resetGame.bind(this));
+
+                    document.body.addEventListener('touchmove', function (e) {
+                        e.preventDefault();
+                    }, { passive: false });
+                },
+
+                tryMove: function (targetRow, targetCol) {
+                    if (GameState.isWin || GameState.isAnimating) return;
+                    if (!this.isWalkable(targetRow, targetCol)) return;
+
+                    const isMine = GameState.isOnMine(targetRow, targetCol);
+                    if (isMine) {
+                        this.triggerMine(targetRow, targetCol);
+                        return;
+                    }
+
+                    const targetVal = GameState.map[targetRow][targetCol];
+                    const isTargetEmpty = (targetVal === 0);
+                    const isLastCorrectCell = GameState.lastCorrectCell &&
+                        GameState.lastCorrectCell.row === targetRow &&
+                        GameState.lastCorrectCell.col === targetCol;
+
+                    if (GameState.isErrorState) {
+                        if (isLastCorrectCell || isTargetEmpty) {
+                            GameState.clearErrorState();
+                            GameState.moveTo(targetRow, targetCol);
+                            UIRenderer.render();
+                            return;
+                        }
+                        this.triggerTeleport(targetRow, targetCol);
+                        return;
+                    }
+
+                    if (targetVal >= 10) {
+                        const targetCharIdx = targetVal - 10;
+
+                        if (GameState.isVisitedChar(targetCharIdx)) {
+                            GameState.moveTo(targetRow, targetCol);
+                            UIRenderer.render();
+                            return;
+                        }
+
+                        if (targetCharIdx === GameState.getTargetCharIndex()) {
+                            GameState.markVisited(targetCharIdx);
+                            GameState.moveTo(targetRow, targetCol);
+                            this.showTemporaryMessage('找到第' + GameState.currentStep + '个字：' + DataManager.getChar(targetCharIdx));
+                            if (GameState.currentStep === DataManager.getTotalChars()) {
+                                setTimeout(() => this.winGame(), 300);
+                            }
+                            UIRenderer.render();
+                            UIRenderer.showJumpAnimation();
+                            return;
+                        } else {
+                            GameState.setErrorState(targetRow, targetCol);
+                            GameState.moveTo(targetRow, targetCol);
+                            UIRenderer.render();
+                            return;
+                        }
+                    }
+
+                    GameState.moveTo(targetRow, targetCol);
+                    UIRenderer.render();
+                    UIRenderer.showJumpAnimation();
+                },
+
+                isWalkable: function (row, col) {
+                    return row >= 0 && row < MazeGenerator.ROWS && col >= 0 && col < MazeGenerator.COLS;
+                },
+
+                triggerMine: function (targetRow, targetCol) {
+                    GameState.isAnimating = true;
+                    GameState.triggerMine(targetRow, targetCol);
+                    GameState.moveTo(targetRow, targetCol);
+                    UIRenderer.showMineToast();
+
+                    if (this.mineToastTimer) clearTimeout(this.mineToastTimer);
+                    this.mineToastTimer = setTimeout(() => {
+                        UIRenderer.hideMineToast();
+                    }, 2000);
+
+                    setTimeout(() => {
+                        GameState.playerRow = MazeGenerator.startPos.row;
+                        GameState.playerCol = MazeGenerator.startPos.col;
+                        GameState.clearErrorState();
+                        GameState.clearTriggeredMine();
+                        GameState.isAnimating = false;
+                        UIRenderer.render();
+                    }, 1000);
+                },
+
+                triggerTeleport: function (targetRow, targetCol) {
+                    GameState.isAnimating = true;
+                    UIRenderer.showTeleportAnimation(targetRow, targetCol);
+
+                    setTimeout(() => {
+                        UIRenderer.showError();
+                        setTimeout(() => {
+                            UIRenderer.hideError();
+                            GameState.playerRow = MazeGenerator.startPos.row;
+                            GameState.playerCol = MazeGenerator.startPos.col;
+                            GameState.clearErrorState();
+                            GameState.isAnimating = false;
+                            UIRenderer.clearTeleportAnimations();
+                            UIRenderer.render();
+                        }, 2000);
+                    }, 1200);
+                },
+
+                winGame: function () {
+                    GameState.setWin();
+                    UIRenderer.render();
+                    UIRenderer.showWin();
+                },
+
+                resetGame: function () {
+                    const map = MazeGenerator.generate(DataManager.getTotalChars());
+                    if (!map) {
+                        UIRenderer.showMessage('地图生成失败，请刷新重试');
+                        return;
+                    }
+
+                    GameState.reset(map);
+                    UIRenderer.hideWin();
+
+                    if (this.msgTimer) clearTimeout(this.msgTimer);
+
+                    UIRenderer.render();
+                    this.showTemporaryMessage('重新开始！按顺序收集诗句吧');
+                },
+
+                goBack: function () {
+                    document.removeEventListener('keydown', this.handleKey.bind(this));
+
+                    if (this.msgTimer) {
+                        clearTimeout(this.msgTimer);
+                        this.msgTimer = null;
+                    }
+
+                    GameState.isWin = false;
+                    GameState.isAnimating = false;
+                    GameState.isErrorState = false;
+                    GameState.errorCell = null;
+                    GameState.lastCorrectCell = null;
+                    GameState.triggeredMine = null;
+
+                    UIRenderer.hideWin();
+                    UIRenderer.hideError();
+                    UIRenderer.clearTeleportAnimations();
+
+                    let returnUrl = 'index.html';
+                    try {
+                        const saved = sessionStorage.getItem('mazeReturnUrl');
+                        if (saved && typeof saved === 'string') {
+                            returnUrl = saved;
+                        }
+                    } catch (e) {
+                    }
+
+                    const poemKey = DataManager.poemKey || 'XiaoQingWa';
+
+                    if (returnUrl.includes('?')) {
+                        window.location.href = returnUrl + '&page=level&poemKey=' + poemKey;
+                    } else {
+                        window.location.href = returnUrl + '?page=level&poemKey=' + poemKey;
+                    }
+                },
+
+                handleKey: function (e) {
+                    const key = e.key;
+                    const dirs = {
+                        'ArrowUp': [-1, 0],
+                        'ArrowDown': [1, 0],
+                        'ArrowLeft': [0, -1],
+                        'ArrowRight': [0, 1],
+                        'w': [-1, 0],
+                        'W': [-1, 0],
+                        's': [1, 0],
+                        'S': [1, 0],
+                        'a': [0, -1],
+                        'A': [0, -1],
+                        'd': [0, 1],
+                        'D': [0, 1]
+                    };
+
+                    if (key in dirs) {
+                        e.preventDefault();
+                        const drdc = dirs[key];
+                        this.tryMove(GameState.playerRow + drdc[0], GameState.playerCol + drdc[1]);
+                    }
+
+                    if (key === 'r' || key === 'R') {
+                        this.resetGame();
+                    }
+                },
+
+                showTemporaryMessage: function (msg) {
+                    UIRenderer.showMessage(msg);
+                    if (this.msgTimer) clearTimeout(this.msgTimer);
+
+                    this.msgTimer = setTimeout(() => {
+                        if (!GameState.isWin) {
+                            UIRenderer.showTargetMessage();
+                        }
+                        this.msgTimer = null;
+                    }, 1200);
+                }
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                try {
+                    GameController.init();
+                } catch (error) {
+                    console.error('游戏启动失败:', error);
+                    const display = document.getElementById('poemDisplay');
+                    if (display) {
+                        display.innerHTML = '<span style="color:#d00000;">游戏启动失败，请刷新重试</span>';
+                    }
+                }
+            });
+
+        })();
+    </script>
+
+</body>
+
+</html>

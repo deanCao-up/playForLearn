@@ -1,0 +1,3268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玩游戏养宠物</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #FFE4E1 0%, #E6E6FA 50%, #E0FFE0 100%);
+            min-height: 100vh;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(90deg, #FF69B4, #9370DB);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo img {
+            width: 40px;
+            margin-right: 10px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* 用户设置下拉框 */
+        .user-menu {
+            display: none;
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 280px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            z-index: 200;
+        }
+
+        .user-menu.active {
+            display: block;
+        }
+
+        .user-menu h3 {
+            color: #FF69B4;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .user-menu .form-group {
+            margin-bottom: 15px;
+        }
+
+        .user-menu label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .user-menu input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #F0F0F0;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .user-menu input:focus {
+            border-color: #FF69B4;
+        }
+
+        .user-menu .gender-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .user-menu .gender-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .user-menu .gender-option:hover {
+            background: #FFF0F5;
+        }
+
+        .user-menu .gender-option.selected {
+            background: #FFE4E1;
+        }
+
+        .user-menu .save-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #FF69B4, #9370DB);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .user-menu .user-name {
+            font-size: 14px;
+            color: #9370DB;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: #F8F8FF;
+            border-radius: 5px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 当前宠物卡片 */
+        .pet-card {
+            /*暂时隐藏 */
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .pet-card h2 {
+            color: #FF69B4;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .pet-display {
+            background: linear-gradient(135deg, #FFF8DC, #FFEFD5);
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pet-image {
+            font-size: 80px;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pet-info {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-item span {
+            display: block;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .info-item .value {
+            color: #FF69B4;
+            font-size: 18px;
+        }
+
+        /* 未获得宠物时的样式 */
+        .no-pet {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .no-pet h2 {
+            color: #9370DB;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .welcome-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .pet-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .pet-avatar {
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .pet-avatar img {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+        }
+
+        .pet-avatar:hover {
+            transform: scale(1.2);
+        }
+
+        .pet-avatar-1 {
+            animation: bounce 2s infinite;
+        }
+
+        .pet-avatar-2 {
+            animation: bounce 2s infinite 0.4s;
+        }
+
+        .pet-avatar-3 {
+            animation: bounce 2s infinite 0.8s;
+        }
+
+        .pet-avatar-4 {
+            animation: bounce 2s infinite 1.2s;
+        }
+
+        .pet-avatar-5 {
+            animation: bounce 2s infinite 1.6s;
+        }
+
+        /* 游戏入口区 */
+        .game-section {
+            margin-bottom: 30px;
+        }
+
+        .game-section h2 {
+            color: #9370DB;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .game-grid-single {
+            display: flex;
+            justify-content: center;
+        }
+
+        .game-grid-single .game-card {
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 横向游戏卡片样式 - 响应式网格布局 */
+        .game-horizontal-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: flex-start;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .game-horizontal-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            justify-content: flex-start;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            min-height: 100px;
+            /* 每行5个卡片，减去gap间距 */
+            width: calc(20% - 13px);
+            min-width: 140px;
+            max-width: 200px;
+            flex-shrink: 0;
+            flex-direction: column;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .game-horizontal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .game-left-label {
+            display: none;
+        }
+
+        .game-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: static;
+            left: auto;
+            transform: none;
+        }
+
+        .game-icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFB6C1, #FFC0CB);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+        }
+
+        .game-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .game-divider {
+            display: none;
+        }
+
+        .game-reward {
+            font-size: 12px;
+            color: #9370DB;
+            font-weight: bold;
+            position: static;
+            transform: none;
+            margin-top: auto;
+        }
+
+        .game-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .game-icon.chinese {
+            background: linear-gradient(135deg, #FFB6C1, #FFC0CB);
+        }
+
+        .game-icon.math {
+            background: linear-gradient(135deg, #87CEEB, #B0E0E6);
+        }
+
+        .game-icon.english {
+            background: linear-gradient(135deg, #98FB98, #90EE90);
+        }
+
+        .game-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .game-card .progress {
+            background: #F0F0F0;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .game-card .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FF69B4, #9370DB);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        .game-card .level {
+            color: #9370DB;
+            font-weight: bold;
+        }
+
+        /* 宠物乐园入口 */
+        .pet-paradise-btn {
+            /* display: block; */
+            display: none;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            text-decoration: none;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(255, 165, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .pet-paradise-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 165, 0, 0.4);
+        }
+
+        /* 游戏页面 */
+        .game-page {
+            display: none;
+            position: relative;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 28px;
+            color: #9370DB;
+        }
+
+        .back-btn {
+            background: #FFB6C1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #FF69B4;
+        }
+
+        .game-area {
+            background: linear-gradient(135deg, #FFF8DC, #FFEFD5);
+            border-radius: 15px;
+            padding: 40px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .game-placeholder {
+            text-align: center;
+            color: #999;
+        }
+
+        .game-placeholder .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        /* 小青蛙游戏样式 */
+        .game-entry-section {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .frog-entry-btn {
+            background: linear-gradient(135deg, #FF6347, #FF8C42);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 99, 71, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .frog-entry-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 99, 71, 0.5);
+        }
+
+        .frog-entry-btn .reward-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: normal;
+            color: #FFD700;
+            background: rgba(255, 215, 0, 0.15);
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+
+        .reward-icon {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        /* 俄罗斯方块游戏样式 */
+        .tetris-entry-btn {
+            background: linear-gradient(135deg, #9B59B6, #8E44AD);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tetris-entry-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.5);
+        }
+
+        .tetris-confirm {
+            background: rgba(0, 0, 0, 0.5);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .tetris-confirm.show {
+            display: flex;
+        }
+
+        .confirm-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .confirm-content h2 {
+            color: #9B59B6;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .confirm-content .rules {
+            background: #F5F0FF;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .confirm-content .rules h3 {
+            color: #8E44AD;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .confirm-content .rules p {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .start-tetris-btn {
+            background: linear-gradient(135deg, #9B59B6, #8E44AD);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+            transition: transform 0.3s;
+        }
+
+        .start-tetris-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .tetris-game {
+            width: 100%;
+        }
+
+        .tetris-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tetris-play-area {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .tetris-play-area h3 {
+            color: #9B59B6;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #tetrisCanvas {
+            border: 3px solid #9B59B6;
+            border-radius: 10px;
+            background: #F5F0FF;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .tetris-controls {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .tetris-controls p {
+            margin: 5px 0;
+        }
+
+        .tetris-poem-area {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            width: 350px;
+            min-height: 400px;
+        }
+
+        .tetris-poem-area h3 {
+            color: #9B59B6;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .poem-completed {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .completed-line {
+            background: linear-gradient(135deg, #9B59B6, #8E44AD);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        /* 诗词迷宫样式 */
+        .maze-game {
+            width: 100%;
+            padding: 20px;
+        }
+
+        .maze-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .maze-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #9370DB;
+        }
+
+        .maze-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .maze-cell {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #DDA0DD, #D8BFD8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .maze-cell.revealed {
+            background: linear-gradient(135deg, #FFF8DC, #FFEFD5);
+        }
+
+        .maze-cell.wrong {
+            background: linear-gradient(135deg, #FF6B6B, #EE6666);
+        }
+
+        .maze-cell.correct {
+            background: linear-gradient(135deg, #90EE90, #7CCD7C);
+        }
+
+        .maze-cell .frog {
+            position: absolute;
+            font-size: 24px;
+        }
+
+        .maze-cell .char {
+            z-index: 1;
+        }
+
+        .maze-controls {
+            margin-top: 20px;
+        }
+
+        .maze-controls button {
+            font-size: 24px;
+            padding: 10px 20px;
+            margin: 5px;
+            background: linear-gradient(135deg, #FF69B4, #9370DB);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .maze-controls button:hover {
+            transform: scale(1.1);
+        }
+
+        .frog-game {
+            width: 60%;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .game-content-inner {
+            text-align: center;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .prompt-text {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 30px;
+            background: #E8F4F8;
+            padding: 15px 30px;
+            border-radius: 25px;
+            display: inline-block;
+        }
+
+        .poem-display {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .poem-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .poem-line {
+            font-size: 24px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .poem-line:hover {
+            background: #F0FFF0;
+        }
+
+        .poem-line.active {
+            background: #90EE90;
+            color: #228B22;
+            transform: scale(1.02);
+        }
+
+        .poem-line.read {
+            background: #E6E6FA;
+            color: #6A5ACD;
+        }
+
+        .microphone-area {
+            margin-bottom: 20px;
+        }
+
+        .microphone-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .microphone-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(255, 107, 107, 0.5);
+        }
+
+        .microphone-btn.recording {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .read-all-btn {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-left: 15px;
+        }
+
+        .read-all-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(78, 205, 196, 0.5);
+        }
+
+        .encouragement {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #FF69B4;
+            min-height: 30px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-info {
+            font-size: 18px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .game-progress {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .game-progress .label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+
+            color: #666;
+        }
+
+        .game-progress-bar {
+            height: 20px;
+            background: #F0F0F0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .game-progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF69B4, #9370DB);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        /* 宠物乐园页面 */
+        .paradise-page {
+            display: none;
+        }
+
+        .paradise-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .paradise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .paradise-title {
+            font-size: 28px;
+            color: #FFD700;
+        }
+
+        .paradise-area {
+            background: linear-gradient(135deg, #E0FFE0, #E6E6FA);
+            border-radius: 20px;
+            padding: 40px;
+            min-height: 400px;
+        }
+
+        .paradise-pets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+        }
+
+        .pet-item {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .pet-item:hover {
+            transform: scale(1.05);
+        }
+
+        .pet-item .emoji {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .pet-item .name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .pet-item .stage {
+            color: #9370DB;
+            font-size: 14px;
+        }
+
+        /* 弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content .reward-image {
+            margin-bottom: 20px;
+        }
+
+        .pet-reward-img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            animation: bounce 0.5s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-10px);
+            }
+        }
+
+        .modal-content h3 {
+            color: #FF69B4;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .modal-content .close-btn {
+            background: linear-gradient(135deg, #FF69B4, #9370DB);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .pet-info {
+                gap: 15px;
+            }
+
+            .game-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+        }
+
+        /* 关卡列表页面 */
+        #levelListPage {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FFE4E1 0%, #E6E6FA 50%, #E0FFE0 100%);
+        }
+
+        .level-list-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .level-list-container h2 {
+            color: #9370DB;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .level-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .level-number {
+            background: linear-gradient(135deg, #FF69B4, #9370DB);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .level-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .level-desc {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 首页 -->
+    <div class="home-page">
+        <!-- 导航栏 -->
+        <nav class="navbar">
+            <div class="logo">
+                <span>🎯</span>
+                <span>诗词游戏</span>
+            </div>
+            <div class="nav-right">
+                <div class="user-avatar" onclick="toggleUserMenu(this)">👦
+                    <!-- 用户设置下拉框 -->
+                    <div class="user-menu">
+                        <h3>⚙️ 用户设置</h3>
+                        <div class="user-name currentUserName">当前昵称：小朋友</div>
+                        <div class="form-group">
+                            <label>你的名字</label>
+                            <input type="text" class="userNameInput" placeholder="请输入你的名字"
+                                onclick="event.stopPropagation()">
+                        </div>
+                        <div class="form-group">
+                            <label>性别</label>
+                            <div class="gender-options">
+                                <div class="gender-option genderBoy" onclick="selectGender(event, this, 'boy')">
+                                    <span>👦</span>
+                                    <span>男孩</span>
+                                </div>
+                                <div class="gender-option selected genderGirl"
+                                    onclick="selectGender(event, this, 'girl')">
+                                    <span>👧</span>
+                                    <span>女孩</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="save-btn" onclick="saveUserSettings(event, this)">保存设置</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容 -->
+        <div class="main-content">
+            <!-- 当前宠物卡片 -->
+            <div class="pet-card" id="petCard">
+                <!-- 未获得宠物时的显示 -->
+                <div class="no-pet" id="noPet">
+                    <h2>🐾 可领养的宠物</h2>
+                    <p class="welcome-text">小朋友，快去玩游戏领养宠物吧</p>
+                    <div class="pet-gallery">
+                        <div class="pet-avatar pet-avatar-1"><img src="宠物图片素材/黄柴犬后期-removebg.png" alt="小柴狗"></div>
+                        <div class="pet-avatar pet-avatar-2"><img src="宠物图片素材/三花猫幼年-removebg.png" alt="三花猫"></div>
+                        <div class="pet-avatar pet-avatar-3"><img src="宠物图片素材/兔子中期-removebg.png" alt="小兔子"></div>
+                        <div class="pet-avatar pet-avatar-4"><img src="宠物图片素材/仓鼠幼年-removebg.png" alt="小仓鼠"></div>
+                        <div class="pet-avatar pet-avatar-5"><img src="宠物图片素材/熊猫中期-removebg.png" alt="小熊猫"></div>
+                    </div>
+                </div>
+
+                <!-- 获得宠物后的显示 -->
+                <div class="has-pet" id="hasPet" style="display: none;">
+                    <h2 id="petTitle">🐕 我的小奶狗宝宝</h2>
+                    <div class="pet-display">
+                        <div class="pet-image" id="petImage"><img src="宠物图片素材/黄柴犬-removebg.png" alt="小柴狗宝宝"></div>
+                        <div class="pet-info">
+                            <div class="info-item">
+                                <span>成长阶段</span>
+                                <span class="value" id="petStage">小奶狗宝宝</span>
+                            </div>
+                            <div class="info-item">
+                                <span>成长值</span>
+                                <span class="value" id="petGrowth">0%</span>
+                            </div>
+                            <div class="info-item">
+                                <span>快乐值</span>
+                                <span class="value" id="petHappiness">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 游戏入口区 -->
+            <div class="game-section">
+                <h2>🎮 开始游戏</h2>
+                <div class="game-horizontal-list">
+                    <!-- 小青蛙游戏入口🐸 -->
+                    <div class="game-horizontal-card frog-home-card" onclick="showLevelList('XiaoQingWa')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🐸</div>
+                            <div class="game-name">小青蛙</div>
+                        </div>
+                        <!-- <div class="game-reward">可领养1只宠物</div> -->
+                    </div>
+                    <!-- 画游戏入口 -->
+                    <div class="game-horizontal-card Hua-home-card" onclick="showLevelList('Hua')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🖼️</div>
+                            <div class="game-name">画</div>
+                        </div>
+                    </div>
+                    <!-- 咏鹅游戏入口 -->
+                    <div class="game-horizontal-card YongE-home-card" onclick="showLevelList('YongE')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🦢</div>
+                            <div class="game-name">咏鹅</div>
+                        </div>
+                    </div>
+                    <!-- 悯农游戏入口 -->
+                    <div class="game-horizontal-card MinNong-home-card" onclick="showLevelList('MinNong')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🌾</div>
+                            <div class="game-name">悯农</div>
+                        </div>
+                    </div>
+                    <!-- 江南游戏入口 -->
+                    <div class="game-horizontal-card 江南-home-card" onclick="showLevelList('江南')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🪷</div>
+                            <div class="game-name">江南</div>
+                        </div>
+                    </div>
+                    <!-- 对韵歌游戏入口 -->
+                    <div class="game-horizontal-card 对韵歌-home-card" onclick="showLevelList('对韵歌')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">☘</div>
+                            <div class="game-name">对韵歌</div>
+                        </div>
+                    </div>
+                    <!-- 升国旗游戏入口 -->
+                    <div class="game-horizontal-card 升国旗-home-card" onclick="showLevelList('升国旗')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">⭐</div>
+                            <div class="game-name">升国旗</div>
+                        </div>
+                    </div>
+                    <!-- 古朗月行游戏入口 -->
+                    <div class="game-horizontal-card 古朗月行-home-card" onclick="showLevelList('古朗月行')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🌕️</div>
+                            <div class="game-name">古朗月行</div>
+                        </div>
+                    </div>
+                    <!-- 小小的船游戏入口 -->
+                    <div class="game-horizontal-card 小小的船-home-card" onclick="showLevelList('小小的船')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">⛵</div>
+                            <div class="game-name">小小的船</div>
+                        </div>
+                    </div>
+                    <!-- 两件宝游戏入口 -->
+                    <div class="game-horizontal-card 两件宝-home-card" onclick="showLevelList('两件宝')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🙌</div>
+                            <div class="game-name">两件宝</div>
+                        </div>
+                    </div>
+                    <!-- 风游戏入口 -->
+                    <div class="game-horizontal-card 风-home-card" onclick="showLevelList('风')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🍁</div>
+                            <div class="game-name">风</div>
+                        </div>
+                    </div>
+                    <!-- 春晓游戏入口 -->
+                    <div class="game-horizontal-card ChunXiao-home-card" onclick="showLevelList('ChunXiao')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🌸</div>
+                            <div class="game-name">春晓</div>
+                        </div>
+                    </div>
+                    <!-- 寻隐者不遇游戏入口 -->
+                    <div class="game-horizontal-card XunYinZheBuYu-home-card" onclick="showLevelList('XunYinZheBuYu')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🏔️</div>
+                            <div class="game-name">寻隐者不遇</div>
+                        </div>
+                    </div>
+                    <!-- 赠汪伦游戏入口 -->
+                    <div class="game-horizontal-card ZengWangLun-home-card" onclick="showLevelList('ZengWangLun')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🚣</div>
+                            <div class="game-name">赠汪伦</div>
+                        </div>
+                    </div>
+                    <!-- 静夜思游戏入口 -->
+                    <div class="game-horizontal-card JingYeSi-home-card" onclick="showLevelList('JingYeSi')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🌙</div>
+                            <div class="game-name">静夜思</div>
+                        </div>
+                    </div>
+                    <!-- 古对今游戏入口 -->
+                    <div class="game-horizontal-card GuDuiJin-home-card" onclick="showLevelList('GuDuiJin')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">📜</div>
+                            <div class="game-name">古对今</div>
+                        </div>
+                    </div>
+                    <!-- 人之初游戏入口 -->
+                    <div class="game-horizontal-card RenZhiChu-home-card" onclick="showLevelList('RenZhiChu')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">📚</div>
+                            <div class="game-name">人之初</div>
+                        </div>
+                    </div>
+                    <!-- 池上游戏入口 -->
+                    <div class="game-horizontal-card ChiShang-home-card" onclick="showLevelList('ChiShang')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🛶</div>
+                            <div class="game-name">池上</div>
+                        </div>
+                    </div>
+                    <!-- 小池游戏入口 -->
+                    <div class="game-horizontal-card XiaoChi-home-card" onclick="showLevelList('XiaoChi')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🌊</div>
+                            <div class="game-name">小池</div>
+                        </div>
+                    </div>
+                    <!-- 画鸡游戏入口 -->
+                    <div class="game-horizontal-card HuaJi-home-card" onclick="showLevelList('HuaJi')">
+                        <div class="game-center">
+                            <div class="game-icon-circle">🐓</div>
+                            <div class="game-name">画鸡</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 宠物乐园入口 -->
+            <a href="#" class="pet-paradise-btn" onclick="openParadise()">🏠 宠物乐园</a>
+        </div>
+    </div>
+
+    <!-- 游戏页面 -->
+    <div class="game-page">
+        <!-- 诗词跟读 -->
+        <div class="frog-game" id="frogGame" style="display: none;">
+            <!-- 返回按钮 -->
+            <button onclick="backToLevelListPre(POEM_READING)"
+                style="position: absolute; top: 20px; right: 20px; background: white; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 30px;">
+                ⬅️
+            </button>
+
+            <div class="game-content-inner">
+                <div class="prompt-text" id="promptText"
+                    style="font-size: 30px; background-color: white; margin-bottom: 10px;"></div>
+                <div class="author-text" id="authorText" style="font-size: 20px; background-color: white;"></div>
+
+                <div class="poem-display">
+                    <div class="poem-lines" id="poemLines">
+                        <!-- 诗句将动态显示 -->
+                    </div>
+                </div>
+
+                <div class="microphone-area">
+                    <button class="microphone-btn" id="microphoneBtn" onclick="playCurrentLine()">
+                        🎤 点击跟读
+                    </button>
+                    <button class="read-all-btn" id="readAllBtn" onclick="readAllPoem()">
+                        📖 朗读全文
+                    </button>
+                    <div class="encouragement" id="encouragement"></div>
+                </div>
+
+                <div class="progress-info">
+                    <span>已读 <span id="readCount">0</span> / <span id="totalLines">6</span> 句</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 俄罗斯方块确认界面 -->
+        <div class="tetris-confirm" id="tetrisConfirm" style="display: none;">
+            <div class="confirm-content">
+                <button onclick="tetrisConfirmClose()"
+                    style="position: absolute; top: 5px; right: 10px; background: none; border: none; font-size: 20px; color: #666; cursor: pointer;">✕</button>
+                <h2>🧱 诗词俄罗斯方块</h2>
+                <div class="rules">
+                    <h3>游戏规则：</h3>
+                    <p>每个方块上都有不完整的诗词，操作键盘← → 左右移动 | ↑或W 旋转 | ↓或S 加速下落，玩家需要将不同的方块按照横或竖方向合并，组成完整的诗词，即可消除方块。</p>
+                </div>
+                <button class="start-tetris-btn" onclick="startTetrisGame()">开始游戏</button>
+            </div>
+        </div>
+
+        <!-- 诗词迷宫确认界面 -->
+        <div class="tetris-confirm" id="mazeConfirm" style="display: none;">
+            <div class="confirm-content">
+                <button onclick="mazeConfirmClose()"
+                    style="position: absolute; top: 5px; right: 10px; background: none; border: none; font-size: 20px; color: #666; cursor: pointer;">✕</button>
+                <h2>🧩 诗词迷宫</h2>
+                <div class="rules">
+                    <h3>游戏规则：</h3>
+                    <p>玩家需要在迷宫中按照诗词找到正确的路径，使用方向键 ↑ ↓ ← → 控制小青蛙移动，依次踩过诗词的每一个字，即可完成游戏，走错或遇到地雷会被传送回起点哦！</p>
+                </div>
+                <button class="start-tetris-btn" onclick="startMazeGame()">开始游戏</button>
+            </div>
+        </div>
+
+        <!-- 俄罗斯方块游戏内容 -->
+        <div class="tetris-game" id="tetrisGame" style="display: none;">
+            <div class="tetris-container">
+                <!-- 左侧游戏区域 -->
+                <div class="tetris-play-area">
+                    <canvas id="tetrisCanvas" width="540" height="720"></canvas>
+                    <button id="pauseBtn" onclick="pauseTetris()"
+                        style="display: block; margin: 10px auto 0; background: none; border: none; cursor: pointer; font-size: 40px;">⏸️
+                    </button>
+                </div>
+
+                <!-- 右侧诗词展示区域 -->
+                <div class="tetris-poem-area" style="position: relative;">
+                    <!-- 返回按钮 -->
+                    <button onclick="backToLevelListPre(POEM_TETRIS)"
+                        style="position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 30px;">
+                        ⬅️
+                    </button>
+                    <h3 style="margin-top: 35px;">⌨️ 操作说明：</h3>
+                    <p style="font-size: 18px; margin: 10px 0; line-height: 1.5; text-align: center;">↑/W 旋转</p>
+                    <p style="font-size: 18px; margin: 10px 0; line-height: 1.5; text-align: center;">← → 左右移动</p>
+                    <p style="font-size: 18px; margin: 10px 0; line-height: 1.5; text-align: center;">↓/S 加速下落</p>
+                    <h3>📜 已完成的诗句</h3>
+                    <div class="poem-completed" id="poemCompleted">
+                        <!-- 完成的诗句将显示在这里 -->
+                    </div>
+                    <button id="restartTetrisBtn" onclick="startTetrisGame()" style="display: none; margin: 20px auto 0; font-size: 18px;
+                        background: rgb(202, 200, 200); color: rgb(81, 80, 80); padding: 10px 20px;
+                        border: none; border-radius: 25px; cursor: pointer; display: block;">
+                        🔄再玩一次
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 宠物乐园页面 -->
+        <div class="paradise-page">
+            <nav class="navbar">
+                <div class="logo">
+                    <span>🐾</span>
+                    <span>玩游戏养宠物</span>
+                </div>
+                <div class="nav-right">
+                    <div class="user-avatar" onclick="toggleUserMenu(this)">👦
+                        <div class="user-menu">
+                            <h3>⚙️ 用户设置</h3>
+                            <div class="user-name currentUserName">当前昵称：小朋友</div>
+                            <div class="form-group">
+                                <label>你的名字</label>
+                                <input type="text" class="userNameInput" placeholder="请输入你的名字"
+                                    onclick="event.stopPropagation()">
+                            </div>
+                            <div class="form-group">
+                                <label>性别</label>
+                                <div class="gender-options">
+                                    <div class="gender-option genderBoy" onclick="selectGender(event, this, 'boy')">
+                                        <span>👦</span>
+                                        <span>男孩</span>
+                                    </div>
+                                    <div class="gender-option selected genderGirl"
+                                        onclick="selectGender(event, this, 'girl')">
+                                        <span>👧</span>
+                                        <span>女孩</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="save-btn" onclick="saveUserSettings(event, this)">保存设置</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="main-content">
+                <div class="paradise-container">
+                    <div class="paradise-header">
+                        <div class="paradise-title">🏠 宠物乐园</div>
+                        <button class="back-btn" onclick="goHome()">🏠 返回首页</button>
+                    </div>
+
+                    <div class="paradise-area">
+                        <div class="paradise-pets">
+                            <div class="pet-item">
+                                <div class="emoji">🐕</div>
+                                <div class="name">旺财</div>
+                                <div class="stage">成年狗狗</div>
+                            </div>
+                            <div class="pet-item">
+                                <div class="emoji">🐱</div>
+                                <div class="name">小花</div>
+                                <div class="stage">猫咪宝宝</div>
+                            </div>
+                            <div class="pet-item">
+                                <div class="emoji">🐰</div>
+                                <div class="name">小白</div>
+                                <div class="stage">兔子宝宝</div>
+                            </div>
+                            <div class="pet-item">
+                                <div class="emoji">🐹</div>
+                                <div class="name">团团</div>
+                                <div class="stage">仓鼠宝宝</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 奖励弹窗 -->
+        <div class="modal" id="rewardModal" , style="display: none;">
+            <div class="modal-content" style="position: relative;">
+                <button onclick="confirmReward()"
+                    style="position: absolute; top: 5px; right: 10px; background: none; border: none; font-size: 20px; color: #666; cursor: pointer;">✕</button>
+                <div class="reward-image" id="rewardImage">
+                    <img src="宠物图片素材/黄柴犬幼年-removebg.png" alt="小奶狗" class="pet-reward-img">
+                </div>
+                <h3>🎉 恭喜获得奖励！</h3>
+                <p id="rewardText">获得了 <strong>小奶狗宝宝</strong></p>
+                <p id="rewardDesc">快去宠物乐园看看吧！</p>
+                <button class="close-btn" onclick="closeReward()">开始下一关</button>
+            </div>
+        </div>
+
+        <!-- 关卡列表页面 -->
+        <div class="level-list-page" id="levelListPage">
+            <nav class="navbar">
+                <div class="logo">
+                    <span>🐾</span>
+                    <span>玩游戏养宠物</span>
+                </div>
+                <div class="nav-right">
+                    <button class="back-btn" onclick="goHomeFromLevelList()">🏠 返回首页</button>
+                </div>
+            </nav>
+            <div class="main-content">
+                <div class="level-list-container">
+                    <h2 id="levelListTitle"
+                        style="color: #9370DB; margin-bottom: 30px; font-size: 24px; text-align: center;">🎮 选择关卡</h2>
+                    <div id="levelList">
+                        <!-- 静态关卡按钮 - 调试用 -->
+                        <div onclick="enterLevel(1)"
+                            style="background: white; border-radius: 20px; padding: 25px; text-align: center; cursor: pointer; margin-bottom: 20px;">
+                            <div
+                                style="background: linear-gradient(135deg, #FF69B4, #9370DB); color: white; padding: 8px 20px; border-radius: 20px; font-size: 16px; font-weight: bold; display: inline-block; margin-bottom: 15px;">
+                                第1关</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px;">诗词跟读
+                            </div>
+                            <!-- <div style="font-size: 14px; color: #666;">跟读诗词</div> -->
+                        </div>
+                        <!-- <div onclick="enterLevel('frog', 2)" -->
+                        <div onclick="tetrisConfirm()"
+                            style="background: white; border-radius: 20px; padding: 25px; text-align: center; cursor: pointer; margin-bottom: 20px;">
+                            <div
+                                style="background: linear-gradient(135deg, #FF69B4, #9370DB); color: white; padding: 8px 20px; border-radius: 20px; font-size: 16px; font-weight: bold; display: inline-block; margin-bottom: 15px;">
+                                第2关</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px;">诗词俄罗斯方块
+                            </div>
+                            <!-- <div style="font-size: 14px; color: #666;">诗词俄罗斯方块游戏</div> -->
+                        </div>
+                        <!-- 第3关：诗词迷宫 -->
+                        <div onclick="mazeConfirm()"
+                            style="background: white; border-radius: 20px; padding: 25px; text-align: center; cursor: pointer; margin-bottom: 20px;">
+                            <div
+                                style="background: linear-gradient(135deg, #FF69B4, #9370DB); color: white; padding: 8px 20px; border-radius: 20px; font-size: 16px; font-weight: bold; display: inline-block; margin-bottom: 15px;">
+                                第3关</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px;">诗词迷宫
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="poems-data.js"></script>
+    <script>
+        // 页面加载完成后设置点击事件
+        document.addEventListener('DOMContentLoaded', function () {
+            // 给游戏卡片添加点击事件
+            /* var frogCard = document.querySelector('.frog-home-card');
+            if (frogCard) {
+                frogCard.addEventListener('click', function () {
+                    showLevelList('frog');
+                });
+            } */
+
+            // 检查 URL 参数，如果需要跳转到关卡列表页
+            var urlParams = new URLSearchParams(window.location.search);
+            var targetPage = urlParams.get('page');
+            if (targetPage === 'level') {
+                // 从诗词迷宫返回，显示关卡列表页
+                var poemKey = urlParams.get('poemKey') || 'XiaoQingWa';
+                showLevelList(poemKey);
+                // 清除 URL 参数，避免刷新页面时重复跳转
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+
+        // 关卡配置 - 可扩展添加更多关卡
+        /* const levelConfig = {
+            frog: {
+                name: '小青蛙',
+                levels: [
+                    { id: 1, name: '跟读小青蛙', description: '跟读小青蛙儿歌' },
+                    { id: 2, name: '诗词俄罗斯方块', description: '诗词俄罗斯方块游戏' }
+                ]
+            },
+        }; */
+
+        //关卡配置
+        const POEM_READING = 1;
+        const POEM_TETRIS = 2;
+
+        // 返回关卡列表
+        function backToLevelListPre(currentLevel) {
+            switch (currentLevel) {
+                case POEM_READING: //诗词跟读
+                    // 如果正在全文朗读，停止全文朗读
+                    if (isReadingAll) {
+                        isReadingAll = false;
+                        if (readAllTimer) {
+                            clearTimeout(readAllTimer);
+                            readAllTimer = null;
+                        }
+                    }
+                    // 如果正在朗读，停止朗读
+                    if (typeof isSpeaking !== 'undefined' && isSpeaking) {
+                        window.speechSynthesis.cancel();
+                        isSpeaking = false;
+                    }
+                    // 重置游戏状态
+                    currentLineIndex = 0;
+                    readCount = 0;
+                    updateReadCount();
+                    clearEncouragement();
+                    // 恢复按钮状态
+                    const readAllBtn = document.getElementById('readAllBtn');
+                    if (readAllBtn) {
+                        readAllBtn.textContent = '📖 朗读全文';
+                    }
+                    const micBtn = document.getElementById('microphoneBtn');
+                    if (micBtn) {
+                        micBtn.disabled = false;
+                    }
+                    document.getElementById('frogGame').style.display = 'none';
+                    break;
+                case POEM_TETRIS: //诗词俄罗斯方块
+                    // 如果正在朗读，停止朗读
+                    if (typeof isSpeaking !== 'undefined' && isSpeaking) {
+                        window.speechSynthesis.cancel();
+                        isSpeaking = false;
+                    }
+                    // 停止俄罗斯方块游戏循环
+                    if (gameInterval) {
+                        clearInterval(gameInterval);
+                        gameInterval = null;
+                    }
+                    document.removeEventListener('keydown', handleKeyDown);
+                    document.getElementById('tetrisGame').style.display = 'none';
+                    break;
+                case 3: //诗词迷宫
+                    document.getElementById('mazeGame').style.display = 'none';
+                    break;
+                default:
+                    break;
+            }
+
+            // 显示关卡列表页
+            document.getElementById('levelListPage').style.display = 'block';
+        }
+
+        // 显示关卡列表
+        function showLevelList(poemKey) {
+            // 隐藏首页
+            document.querySelector('.home-page').style.display = 'none';
+            //显示游戏页面
+            document.querySelector('.game-page').style.display = 'block';
+
+            // 显示关卡列表页 - 使用内联样式
+            var levelListPage = document.getElementById('levelListPage');
+            levelListPage.style.display = 'block';
+
+            // 设置标题 - 使用 poems 中的 title 字段
+            var poem = poems.get(poemKey);
+            var title = poem ? poem.title : poemKey;
+            document.getElementById('levelListTitle').textContent = '🎮 ' + title + ' - 选择关卡';
+
+            currentPoemKey = poemKey; //设置当前诗词key
+        }
+
+        // 进入指定关卡
+        function enterLevel(levelId) {
+            var levelListPage = document.getElementById('levelListPage');
+            levelListPage.style.display = 'none';
+
+            if (levelId === 1) {
+                startPoemReading(currentPoemKey);
+            } else if (levelId === 2) {
+                startTetrisGame();
+            }
+        }
+
+        // 从关卡列表返回首页
+        function goHomeFromLevelList() {
+            var levelListPage = document.getElementById('levelListPage');
+            levelListPage.style.display = 'none';
+            document.querySelector('.home-page').style.display = 'block';
+        }
+
+        // 页面切换
+        /* function openGame(gameType) {
+            document.querySelector('.home-page').style.display = 'none';
+            document.querySelector('.game-page').style.display = 'block';
+            document.querySelector('.paradise-page').style.display = 'none';
+
+            // 更新游戏标题
+            const titles = {
+                chinese: '📖 诗词游戏',
+                math: '🔢 数学游戏',
+                english: '🔤 英语游戏'
+            };
+            document.querySelector('.game-title').textContent = titles[gameType];
+
+            // 重置所有游戏状态 - 隐藏所有游戏内容
+            document.getElementById('level1Entry').style.display = 'none';
+            document.getElementById('frogGame').style.display = 'none';
+            document.getElementById('tetrisConfirm').style.display = 'none';
+            document.getElementById('tetrisGame').style.display = 'none';
+        } */
+
+        function openParadise() {
+            document.querySelector('.home-page').style.display = 'none';
+            document.querySelector('.game-page').style.display = 'none';
+            document.querySelector('.paradise-page').style.display = 'block';
+        }
+
+        // 从关卡列表进入诗词跟读游戏
+        /*  function startFrogGame() {
+             startPoemReading('XiaoQingWa');
+         } */
+
+        function goHome() {
+            // 停止俄罗斯方块游戏
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
+            document.removeEventListener('keydown', handleKeyDown);
+
+            // 重置小青蛙游戏状态
+            currentLineIndex = 0;
+            readCount = 0;
+
+            // 隐藏关卡列表页
+            document.getElementById('levelListPage').style.display = 'none';
+
+            document.querySelector('.home-page').style.display = 'block';
+            document.querySelector('.game-page').style.display = 'none';
+            document.querySelector('.paradise-page').style.display = 'none';
+        }
+
+        // ---------- 小青蛙游戏逻辑 ----------
+        let poemLines = [];
+
+        function getCurrentPoemLines(poemKey) {
+            const poem = poems.get(poemKey);
+            if (!poem) {
+                console.error('诗词不存在:', poemKey);
+                return [];
+            }
+            return poem.lines;
+        }
+
+        function getCurrentPoemTitle(poemKey) {
+            const poem = poems.get(poemKey);
+            if (!poem) {
+                console.error('诗词不存在:', poemKey);
+                return '';
+            }
+            return poem.title;
+        }
+
+        function getCurrentPoemDynastyAuthor(poemKey) {
+            const poem = poems.get(poemKey);
+            if (!poem) {
+                console.error('诗词不存在:', poemKey);
+                return '';
+            }
+            if (!poem.dynasty) {
+                return poem.author;
+            }
+            return '[' + poem.dynasty + '] ' + '    ' + poem.author;
+        }
+
+        const encouragements = [
+            "真棒！声音真好听！",
+            "读得太好啦！",
+            "你真聪明！",
+            "继续加油！",
+            "太棒了！"
+        ];
+
+        let currentLineIndex = 0;
+        let readCount = 0;
+        let isSpeaking = false;
+        let isReadingAll = false;
+        let readAllTimer = null;
+
+        // 初始化语音合成
+        function getVoice() {
+            // 尝试获取中文语音
+            const voices = window.speechSynthesis.getVoices();
+            // 优先选择中文语音
+            const chineseVoice = voices.find(v => v.lang.startsWith('zh')) ||
+                voices.find(v => v.name.includes('Chinese')) ||
+                voices.find(v => v.lang.startsWith('zh-CN'));
+            return chineseVoice || voices[0];
+        }
+
+        // 朗读文本
+        function speak(text, callback) {
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+            }
+
+            isSpeaking = true;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.8; // 慢一点，适合小朋友
+            utterance.pitch = 1;
+
+            const voice = getVoice();
+            if (voice) {
+                utterance.voice = voice;
+            }
+
+            utterance.onend = function () {
+                isSpeaking = false;
+                if (callback) callback();
+            };
+
+            utterance.onerror = function () {
+                isSpeaking = false;
+                if (callback) callback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function initFrogGame() {
+            const poemContainer = document.getElementById('poemLines');
+            poemContainer.innerHTML = '';
+
+            document.getElementById('promptText').textContent = getCurrentPoemTitle(currentPoemKey);
+            document.getElementById('authorText').textContent = getCurrentPoemDynastyAuthor(currentPoemKey);
+
+            poemLines.forEach((line, index) => {
+                const lineElement = document.createElement('div');
+                lineElement.className = 'poem-line';
+                lineElement.textContent = line;
+                lineElement.dataset.index = index;
+                lineElement.addEventListener('click', function () {
+                    clickReadLine(index);
+                });
+                poemContainer.appendChild(lineElement);
+            });
+
+            highlightCurrentLine();
+            currentLineIndex = 0;
+            readCount = 0;
+            updateReadCount();
+            clearEncouragement();
+        }
+
+        // 参数化启动诗词跟读游戏
+        function startPoemReading(poemKey) {
+            if (!poems.has(poemKey)) {
+                console.error('无效的诗词标识:', poemKey);
+                alert(`找不到诗词 "${poemKey}"，请检查诗词标识是否正确。`);
+                return;
+            }
+
+            //poemLines = getCurrentPoemLines(poemKey);
+
+            const poem = poems.get(poemKey);
+            poemLines = poem.lines;
+            console.log('开始朗读诗词:', poem.title);
+
+            document.getElementById('levelListPage').style.display = 'none';
+            document.getElementById('frogGame').style.display = 'block';
+
+            initFrogGame();
+
+            const spText = poem.title + ',' + poem.dynasty + ',' + poem.author;
+            speak(spText, function () {
+            });
+            /* speak("小朋友，请跟我一起读", function () {
+            }); */
+        }
+
+        function highlightCurrentLine() {
+            document.querySelectorAll('.poem-line').forEach((line, index) => {
+                line.classList.remove('active', 'read');
+                if (index === currentLineIndex) {
+                    line.classList.add('active');
+                } else if (index < currentLineIndex) {
+                    line.classList.add('read');
+                }
+            });
+        }
+
+        // 点击某一行诗句朗读
+        function clickReadLine(index) {
+            if (isSpeaking) return;
+
+            // 高亮点击的行
+            document.querySelectorAll('.poem-line').forEach((line, i) => {
+                line.classList.remove('active');
+                if (i === index) {
+                    line.classList.add('active');
+                }
+            });
+
+            // 朗读该行诗句
+            speak(poemLines[index].replace(' / ', ''));
+        }
+
+        function playCurrentLine() {
+            const btn = document.getElementById('microphoneBtn');
+
+            // 如果正在说话，等待完成
+            if (isSpeaking) return;
+
+            // 如果已经读完所有句子，重新开始
+            if (currentLineIndex >= poemLines.length) {
+                resetPoem();
+                return; // 重置后直接返回，等待用户再次点击
+            }
+
+            btn.classList.add('recording');
+            btn.textContent = '🎤 跟读中...';
+
+            // 朗读当前诗句
+            speak(poemLines[currentLineIndex].replace(' / ', ''), function () {
+                btn.classList.remove('recording');
+                btn.textContent = '🎤 点击跟读';
+
+                // 显示鼓励
+                showEncouragement();
+
+                // 标记为已读
+                const currentLine = document.querySelector('.poem-line.active');
+                if (currentLine) {
+                    currentLine.classList.remove('active');
+                    currentLine.classList.add('read');
+                    readCount++;
+                    updateReadCount();
+                }
+
+                // 移动到下一句
+                currentLineIndex++;
+                if (currentLineIndex < poemLines.length) {
+                    highlightCurrentLine();
+                    // 不自动朗读，等待用户点击
+                } else {
+                    // 读完所有句子，先朗读恭喜语，等朗读完后再显示完成按钮
+                    speak('恭喜你读完了整首诗！', function () {
+                        showCompleteButton();
+                    });
+                }
+            });
+        }
+
+        // 重置诗词阅读状态
+        function resetPoem() {
+            // 清除所有已读标记
+            document.querySelectorAll('.poem-line').forEach(line => {
+                line.classList.remove('read');
+            });
+            currentLineIndex = 0;
+            readCount = 0;
+            highlightCurrentLine();
+            updateReadCount();
+
+            // 启用朗读按钮
+            const micBtn = document.getElementById('microphoneBtn');
+            const readAllBtn = document.getElementById('readAllBtn');
+            if (micBtn) {
+                micBtn.disabled = false;
+                micBtn.textContent = '🎤 点击跟读';
+            }
+            if (readAllBtn) {
+                readAllBtn.disabled = false;
+                readAllBtn.textContent = '📖 朗读全文';
+            }
+        }
+
+        // 朗读全文
+        function readAllPoem() {
+            const btn = document.getElementById('readAllBtn');
+            const micBtn = document.getElementById('microphoneBtn');
+
+            if (isSpeaking) return;
+
+            isReadingAll = true;
+            btn.textContent = '📖 朗读中...';
+            micBtn.disabled = true;
+
+            // 从头开始朗读所有诗句
+            let lineIndex = 0;
+
+            function readNextLine() {
+                if (!isReadingAll) return;
+                if (lineIndex < poemLines.length) {
+                    // 高亮当前行
+                    document.querySelectorAll('.poem-line').forEach((line, index) => {
+                        line.classList.remove('active');
+                        if (index === lineIndex) {
+                            line.classList.add('active');
+                        }
+                    });
+
+                    speak(poemLines[lineIndex].replace(' / ', ''), function () {
+                        if (!isReadingAll) return;
+                        // 标记为已读
+                        const currentLine = document.querySelectorAll('.poem-line')[lineIndex];
+                        if (currentLine) {
+                            currentLine.classList.remove('active');
+                            currentLine.classList.add('read');
+                        }
+
+                        lineIndex++;
+                        readCount = lineIndex;
+                        updateReadCount();
+                        currentLineIndex = lineIndex;
+
+                        readAllTimer = setTimeout(readNextLine, 500);
+                    });
+                } else {
+                    isReadingAll = false;
+                    readAllTimer = null;
+                    btn.textContent = '📖 朗读全文';
+                    micBtn.disabled = false;
+                    speak('整首诗朗读完毕！', function () {
+                        // 朗读完毕后显示完成按钮
+                        showCompleteButton();
+                    });
+                }
+            }
+
+            readNextLine();
+        }
+
+        let encouragementTimer = null;
+
+        function showEncouragement(permanent = false) {
+            const encouragementEl = document.getElementById('encouragement');
+            const randomIndex = Math.floor(Math.random() * encouragements.length);
+            encouragementEl.textContent = encouragements[randomIndex];
+
+            if (!permanent) {
+                if (encouragementTimer) clearTimeout(encouragementTimer);
+                encouragementTimer = setTimeout(() => {
+                    clearEncouragement();
+                }, 2000);
+            }
+        }
+
+        function clearEncouragement() {
+            const encouragementEl = document.getElementById('encouragement');
+            if (encouragementEl) {
+                encouragementEl.textContent = '';
+            }
+        }
+
+        // 显示完成按钮
+        function showCompleteButton() {
+            const micBtn = document.getElementById('microphoneBtn');
+            const readAllBtn = document.getElementById('readAllBtn');
+            const encouragement = document.getElementById('encouragement');
+
+            // 清除之前的计时器，防止清除完成按钮
+            if (encouragementTimer) {
+                clearTimeout(encouragementTimer);
+                encouragementTimer = null;
+            }
+
+            // 显示完成按钮（不禁用按钮，只添加完成按钮）
+            //encouragement.innerHTML = '<button class="complete-level-btn" onclick="showReward()" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: white; border: none; padding: 15px 40px; font-size: 20px; border-radius: 50px; cursor: pointer; margin-top: 10px;">🎉 完成本关</button>';
+            encouragement.innerHTML = '<button class="complete-level-btn" onclick="closeReward()" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: white; border: none; padding: 15px 40px; font-size: 20px; border-radius: 50px; cursor: pointer; margin-top: 10px;">🎉 开始下一关</button>';
+        }
+
+        // 显示奖励弹窗
+        function showReward() {
+            completeLevel();
+        }
+
+        function updateReadCount() {
+            document.getElementById('readCount').textContent = readCount;
+            document.getElementById('totalLines').textContent = poemLines.length;
+        }
+
+        // 俄罗斯方块游戏逻辑
+        let tetrisCanvas, ctx;
+        let grid = [];
+        const ROWS = 16;
+        const COLS = 12;
+        const CELL_SIZE = 45;
+
+        let currentBlock = null;
+        let nextBlock = null;
+        let gameInterval = null;
+        let dropSpeed = 1000;
+        let completedLines = [];
+        let isGameOver = false;
+
+        // 生成方块队列（采用新规则：先尾部后首部，间隔投放配对首部）
+        let setIndex = 0; // 当前投放第几套碎片
+        let set1Queue = []; // 第1套碎片队列
+        let set2Queue = []; // 第2套碎片队列
+
+        // 打乱数组
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 生成一套碎片队列（新规则）
+        function generateOneSetQueue() {
+            const queue = [];
+
+            const poem = poems.get(currentPoemKey);
+            if (!poem) {
+                console.error('诗词不存在:', currentPoemKey);
+                return queue;
+            }
+
+            const poemLines = poem.lines;
+            const poemLinesSplit = poem.linesSplit || [];
+            const headLen = poem.headLength;
+            const tailLen = poem.tailLength;
+
+            // 1. 解析诗句，生成首部和尾部碎片
+            const pairs = poemLines.map((line, index) => {
+                let head, tail, headLength, tailLength;
+
+                // 如果有linesSplit字段且当前行有分割定义，使用linesSplit分割
+                if (poemLinesSplit.length > index) {
+                    const splitLine = poemLinesSplit[index];
+                    const parts = splitLine.split('|').filter(p => p.trim() !== '');
+
+                    if (parts.length >= 2) {
+                        head = parts[0].trim();
+                        tail = parts.slice(1).join('');
+                        headLength = head.length;
+                        tailLength = tail.length;
+                    } else if (parts.length === 1) {
+                        head = parts[0].trim();
+                        tail = '';
+                        headLength = head.length;
+                        tailLength = 0;
+                    } else {
+                        head = line.substring(0, headLen);
+                        tail = line.substring(headLen);
+                        headLength = headLen;
+                        tailLength = tailLen;
+                    }
+                } else {
+                    // 回退到使用headLength和tailLength分割
+                    head = line.substring(0, headLen);
+                    tail = line.substring(headLen);
+                    headLength = headLen;
+                    tailLength = tailLen;
+                }
+
+                return {
+                    head: head,
+                    tail: tail,
+                    headLength: headLength,
+                    tailLength: tailLength,
+                    type: 'head',
+                    fullLine: line.replace(/[，。！？、；：]/g, ''),
+                    index: index
+                };
+            });
+
+            // 2. 创建待出尾部池和待出首部池
+            let tailPool = pairs.map(p => ({ text: p.tail, length: p.tailLength, type: 'tail', fullLine: p.fullLine, index: p.index, head: p.head, headLength: p.headLength }));
+            let headPool = pairs.map(p => ({ text: p.head, length: p.headLength, type: 'head', fullLine: p.fullLine, index: p.index, tail: p.tail }));
+
+            // 3. 打乱尾部池
+            tailPool = shuffleArray(tailPool);
+
+            // 4. 核心循环：每次从尾部池抽取尾部，然后间隔投放配对首部
+            while (tailPool.length > 0) {
+                // 4.1 随机抽取1个尾部碎片
+                const tailIndex = Math.floor(Math.random() * tailPool.length);
+                const tail = tailPool.splice(tailIndex, 1)[0];
+                queue.push(tail);
+
+                // 4.2 随机抽取0～2个其他尾部碎片（间隔投放）
+                const intervalCount = Math.floor(Math.random() * 3); // 0, 1, 或 2
+                const availableTails = tailPool.filter(t => t.index !== tail.index);
+                const count = Math.min(intervalCount, availableTails.length);
+
+                if (count > 0) {
+                    const shuffledAvailable = shuffleArray(availableTails);
+                    for (let i = 0; i < count; i++) {
+                        const idx = tailPool.findIndex(t => t.index === shuffledAvailable[i].index);
+                        if (idx !== -1) {
+                            queue.push(tailPool.splice(idx, 1)[0]);
+                        }
+                    }
+                }
+
+                // 4.3 间隔结束后，强制投放该尾部对应的首部碎片
+                const matchingHead = headPool.find(h => h.index === tail.index);
+                if (matchingHead) {
+                    queue.push(matchingHead);
+                    // 从headPool中移除已投放的首部
+                    const headIdx = headPool.findIndex(h => h.index === tail.index);
+                    if (headIdx !== -1) {
+                        headPool.splice(headIdx, 1);
+                    }
+                }
+            }
+
+            // 5. 尾部池清空后，将剩余未匹配的首部依次投放
+            while (headPool.length > 0) {
+                // 随机抽取1个首部
+                const headIndex = Math.floor(Math.random() * headPool.length);
+                queue.push(headPool.splice(headIndex, 1)[0]);
+            }
+
+            return queue;
+        }
+
+        // 生成两套碎片队列
+        function generateBlockQueue() {
+            // 生成第1套
+            set1Queue = generateOneSetQueue();
+            // 生成第2套
+            set2Queue = generateOneSetQueue();
+            setIndex = 0;
+        }
+
+        // 获取下一个方块（外部调用）
+        function getNextBlockFromQueue() {
+            let queue;
+            if (setIndex === 0) {
+                queue = set1Queue;
+            } else {
+                queue = set2Queue;
+            }
+
+            if (queue.length === 0) {
+                // 当前套已投放完
+                if (setIndex === 0) {
+                    // 第1套投放完，检查是否胜利
+                    const poem = poems.get(currentPoemKey);
+                    if (poem && completedLines.length === poem.lines.length) {
+                        // 已胜利，不需要投放第2套
+                        return null;
+                    }
+                    // 切换到第2套
+                    setIndex = 1;
+                    queue = set2Queue;
+                } else {
+                    // 第2套也投放完了，循环复用
+                    set1Queue = generateOneSetQueue();
+                    set2Queue = generateOneSetQueue();
+                    setIndex = 0;
+                    queue = set1Queue;
+                }
+            }
+
+            if (queue.length === 0) {
+                return null;
+            }
+
+            return queue.shift();
+        }
+
+        let blockQueue = [];
+
+        // 显示俄罗斯方块确认界面
+        function showTetrisConfirm() {
+            document.getElementById('level2Entry').style.display = 'none';
+            document.getElementById('tetrisConfirm').style.display = 'flex';
+        }
+
+        // 开始俄罗斯方块游戏
+        function startTetrisGame() {
+            document.getElementById('tetrisConfirm').style.display = 'none';
+            document.getElementById('levelListPage').style.display = 'none';
+            document.getElementById('tetrisGame').style.display = 'block';
+
+            // 隐藏再玩一次按钮
+            document.getElementById('restartTetrisBtn').style.display = 'none';
+
+            // 清空右侧诗词展示区域
+            document.getElementById('poemCompleted').innerHTML = '';
+            completedLines = [];
+
+            // 初始化游戏
+            initTetris();
+        }
+
+        // 暂停/继续俄罗斯方块游戏
+        let isPaused = false;
+        function pauseTetris() {
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (isPaused) {
+                // 继续游戏
+                if (gameInterval) clearInterval(gameInterval);
+                gameInterval = setInterval(gameLoop, dropSpeed);
+                isPaused = false;
+                pauseBtn.textContent = '⏸️';
+            } else {
+                // 暂停游戏
+                if (gameInterval) {
+                    clearInterval(gameInterval);
+                    gameInterval = null;
+                }
+                isPaused = true;
+                pauseBtn.textContent = '▶️';
+            }
+        }
+
+        // 初始化俄罗斯方块
+        function initTetris() {
+            tetrisCanvas = document.getElementById('tetrisCanvas');
+            ctx = tetrisCanvas.getContext('2d');
+
+            // 创建网格
+            grid = [];
+            for (let r = 0; r < ROWS; r++) {
+                grid[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    grid[r][c] = null;
+                }
+            }
+
+            // 生成两套方块队列
+            generateBlockQueue();
+
+            // 生成第一个方块
+            currentBlock = createBlock();
+
+            // 开始游戏循环
+            isGameOver = false;
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, dropSpeed);
+
+            // 添加键盘事件
+            document.addEventListener('keydown', handleKeyDown);
+
+            // 绘制初始画面
+            draw();
+        }
+
+        // 创建方块
+        function createBlock() {
+            const blockData = getNextBlockFromQueue();
+            if (!blockData) {
+                // 游戏胜利
+                gameWin();
+                return null;
+            }
+
+            const chars = blockData.text.split('');
+            const isVertical = chars.length > 1;
+
+            const block = {
+                data: blockData,
+                chars: chars,
+                x: Math.floor((COLS - (isVertical ? 1 : chars.length)) / 2),
+                y: 0,
+                width: isVertical ? 1 : chars.length,
+                height: isVertical ? chars.length : 1
+            };
+
+            return block;
+        }
+
+        // 游戏循环
+        function gameLoop() {
+            if (isGameOver) return;
+
+            moveBlock(0, 1);
+        }
+
+        // 移动方块
+        function moveBlock(dx, dy) {
+            const newX = currentBlock.x + dx;
+            const newY = currentBlock.y + dy;
+
+            if (!collision(newX, newY)) {
+                currentBlock.x = newX;
+                currentBlock.y = newY;
+                draw();
+            } else {
+                if (dy > 0) {
+                    // 方块落地
+                    lockBlock();
+                    checkAndClearLines();
+
+                    // 检查是否有方块触碰到顶部，触碰到则游戏失败
+                    for (let c = 0; c < COLS; c++) {
+                        if (grid[0][c]) {
+                            gameOver();
+                            return;
+                        }
+                    }
+
+                    // 生成新方块
+                    currentBlock = createBlock();
+
+                    // 如果方块为null，说明游戏胜利（队列已空）
+                    if (!currentBlock) {
+                        return;
+                    }
+
+                    // 检查游戏是否结束
+                    /* if (collision(currentBlock.x, currentBlock.y)) {
+                        gameOver();
+                    } */
+
+                    draw();
+                }
+            }
+        }
+
+        // 碰撞检测
+        function collision(x, y) {
+            if (currentBlock.width > currentBlock.height) {
+                // 横向方块
+                for (let c = 0; c < currentBlock.width; c++) {
+                    const checkX = x + c;
+                    const checkY = y;
+
+                    if (checkX < 0 || checkX >= COLS || checkY >= ROWS) {
+                        return true;
+                    }
+
+                    if (checkY >= 0 && grid[checkY][checkX]) {
+                        return true;
+                    }
+                }
+            } else {
+                // 纵向方块
+                for (let r = 0; r < currentBlock.height; r++) {
+                    const checkX = x;
+                    const checkY = y + r;
+
+                    if (checkX < 0 || checkX >= COLS || checkY >= ROWS) {
+                        return true;
+                    }
+
+                    if (checkY >= 0 && grid[checkY][checkX]) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // 锁定方块
+        function lockBlock() {
+            if (currentBlock.width > currentBlock.height) {
+                // 横向锁定
+                for (let c = 0; c < currentBlock.width; c++) {
+                    const x = currentBlock.x + c;
+                    const y = currentBlock.y;
+
+                    if (y >= 0) {
+                        grid[y][x] = {
+                            text: currentBlock.chars[c],
+                            type: currentBlock.data.type,
+                            fullLine: currentBlock.data.fullLine,
+                            charIndex: currentBlock.data.type === 'head' ? c : currentBlock.data.headLength + c,
+                            color: currentBlock.data.type === 'head' ? '#9B59B6' : '#3498DB'
+                        };
+                    }
+                }
+            } else {
+                // 纵向锁定
+                for (let r = 0; r < currentBlock.height; r++) {
+                    const x = currentBlock.x;
+                    const y = currentBlock.y + r;
+
+                    if (y >= 0) {
+                        grid[y][x] = {
+                            text: currentBlock.chars[r],
+                            type: currentBlock.data.type,
+                            fullLine: currentBlock.data.fullLine,
+                            charIndex: currentBlock.data.type === 'head' ? r : currentBlock.data.headLength + r,
+                            color: currentBlock.data.type === 'head' ? '#9B59B6' : '#3498DB'
+                        };
+                    }
+                }
+            }
+
+            // 检查是否有方块触碰到顶部，触碰到则游戏失败
+            /* for (let c = 0; c < COLS; c++) {
+                if (grid[0][c]) {
+                    gameOver();
+                    return;
+                }
+            } */
+        }
+
+        // 检查并消除完整诗句
+        function checkAndClearLines() {
+            // 检查横向组合 - 对每行只调用一次
+            for (let r = ROWS - 1; r >= 0; r--) {
+                checkHorizontalMatch(r);
+            }
+
+            // 检查纵向组合 - 对每列只调用一次
+            for (let c = 0; c < COLS; c++) {
+                checkVerticalMatch(c);
+            }
+        }
+
+        // 检查横向匹配（从左往右顺序）
+        function checkHorizontalMatch(row) {
+            for (let c = 0; c < COLS; c++) {
+                // 跳过空白格
+                if (!grid[row][c]) {
+                    continue;
+                }
+
+                const cell = grid[row][c];
+
+                // 检查是否是首部的第一个字符（charIndex === 0）
+                if (cell.type !== 'head' || cell.charIndex !== 0) {
+                    continue;
+                }
+
+                // 收集从当前位置开始的连续字符
+                let collectedText = '';
+                let hasEmpty = false;
+                // 先收集所有连续字符，不限制长度
+                for (let i = 0; i < COLS - c; i++) {
+                    const targetCell = grid[row][c + i];
+                    if (!targetCell) {
+                        break;
+                    }
+                    collectedText += targetCell.text;
+                }
+
+                // 检查是否匹配诗词中任何一句完整诗句
+                const poem = poems.get(currentPoemKey);
+                const matchedLine = poem.lines.find(line =>
+                    line.replace(/[，。！？、；：]/g, '') === collectedText
+                );
+
+                if (matchedLine) {
+                    // 使用去除标点后的诗句作为完成标记
+                    const cleanedLine = matchedLine.replace(/[，。！？、；：]/g, '');
+                    const lineLen = cleanedLine.length;
+
+                    // 消除该序列所有方块
+                    for (let i = 0; i < lineLen; i++) {
+                        grid[row][c + i] = null;
+                    }
+
+                    // 添加到已完成列表
+                    if (!completedLines.includes(cleanedLine)) {
+                        completedLines.push(cleanedLine);
+                        showCompletedLine(cleanedLine);
+                    }
+
+                    // 检查游戏胜利
+                    checkWin();
+                    return;
+                }
+            }
+        }
+
+        // 上方方块整块下落（保持同一诗句的方块完整）
+        function dropBlocksAbove(row, startCol, lineLen) {
+            // 从 row-1 行往上检查
+            for (let r = row - 1; r >= 0; r--) {
+                // 检查 [startCol, startCol+lineLen) 这一段是否都是同一首诗的方块
+                let canDrop = true;
+                let firstCell = grid[r][startCol];
+                if (!firstCell) {
+                    canDrop = false;
+                } else {
+                    // 检查整段是否是同一首诗
+                    for (let c = startCol; c < startCol + lineLen; c++) {
+                        if (!grid[r][c] || grid[r][c].fullLine !== firstCell.fullLine) {
+                            canDrop = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (canDrop) {
+                    // 整块下移一行
+                    for (let c = startCol; c < startCol + lineLen; c++) {
+                        grid[r + 1][c] = grid[r][c];
+                        grid[r][c] = null;
+                    }
+                } else {
+                    // 不能下落，检查上方行（因为是整块下落，被检查行之上可能还是同一首诗）
+                    continue;
+                }
+            }
+        }
+
+        // 检查纵向匹配（从上往下顺序）
+        function checkVerticalMatch(col) {
+            for (let r = 0; r < ROWS; r++) {
+                // 跳过空白格
+                if (!grid[r][col]) {
+                    continue;
+                }
+
+                const cell = grid[r][col];
+
+                // 检查是否是首部的第一个字符（charIndex === 0）
+                if (cell.type !== 'head' || cell.charIndex !== 0) {
+                    continue;
+                }
+
+                // 收集从当前位置开始的连续字符
+                let collectedText = '';
+                // 先收集所有连续字符，不限制长度
+                for (let i = 0; i < ROWS - r; i++) {
+                    const targetCell = grid[r + i][col];
+                    if (!targetCell) {
+                        break;
+                    }
+                    collectedText += targetCell.text;
+                }
+
+                // 检查是否匹配诗词中任何一句完整诗句
+                const poem = poems.get(currentPoemKey);
+                const matchedLine = poem.lines.find(line =>
+                    line.replace(/[，。！？、；：]/g, '') === collectedText
+                );
+
+                if (matchedLine) {
+                    // 使用去除标点后的诗句作为完成标记
+                    const cleanedLine = matchedLine.replace(/[，。！？、；：]/g, '');
+                    const lineLen = cleanedLine.length;
+
+                    // 消除该序列所有方块
+                    for (let i = 0; i < lineLen; i++) {
+                        grid[r + i][col] = null;
+                    }
+
+                    // 添加到已完成列表
+                    if (!completedLines.includes(cleanedLine)) {
+                        completedLines.push(cleanedLine);
+                        showCompletedLine(cleanedLine);
+                    }
+
+                    // 检查游戏胜利
+                    checkWin();
+                    return;
+                }
+            }
+        }
+
+        // 显示完成的诗句（按原诗词顺序排列）
+        function showCompletedLine(line) {
+            const container = document.getElementById('poemCompleted');
+            container.innerHTML = '';
+
+            const poem = poems.get(currentPoemKey);
+            if (!poem) return;
+
+            // 按照原诗词顺序显示已完成的诗句
+            poem.lines.forEach(poemLine => {
+                const cleanedLine = poemLine.replace(/[，。！？、；：]/g, '');
+                if (completedLines.includes(cleanedLine)) {
+                    const lineElement = document.createElement('div');
+                    lineElement.className = 'completed-line';
+                    lineElement.textContent = poemLine;
+                    container.appendChild(lineElement);
+                }
+            });
+        }
+
+        // 检查游戏胜利
+        function checkWin() {
+            const poem = poems.get(currentPoemKey);
+            if (poem && completedLines.length === poem.lines.length && !isGameOver) {
+                gameWin();
+            }
+        }
+
+        // 游戏胜利
+        function gameWin() {
+            if (isGameOver) return; // 防止重复触发
+            isGameOver = true;
+            clearInterval(gameInterval);
+            speak('恭喜你完成了诗词俄罗斯方块！', function () {
+                alert('🎉 恭喜你完成了诗词俄罗斯方块！');
+                document.removeEventListener('keydown', handleKeyDown);
+                // 显示再玩一次按钮
+                document.getElementById('restartTetrisBtn').style.display = 'block';
+            });
+        }
+
+        // 游戏失败
+        function gameOver() {
+            isGameOver = true;
+            clearInterval(gameInterval);
+            alert('😢 游戏结束，再试一次吧！');
+            document.removeEventListener('keydown', handleKeyDown);
+            // 显示再玩一次按钮
+            document.getElementById('restartTetrisBtn').style.display = 'block';
+            /* speak('游戏结束，再试一次吧！', function () {
+                alert('😢 游戏结束，再试一次吧！');
+                document.removeEventListener('keydown', handleKeyDown);
+                // 显示再玩一次按钮
+                document.getElementById('restartTetrisBtn').style.display = 'block';
+            }); */
+        }
+
+        // 键盘事件处理
+        function handleKeyDown(e) {
+            if (isGameOver) return;
+
+            switch (e.key.toUpperCase()) {
+                case 'ARROWLEFT':
+                case 'A':
+                    e.preventDefault();
+                    moveBlock(-1, 0);
+                    break;
+                case 'ARROWRIGHT':
+                case 'D':
+                    e.preventDefault();
+                    moveBlock(1, 0);
+                    break;
+                case 'ARROWDOWN':
+                case 'S':
+                    e.preventDefault();
+                    moveBlock(0, 1);
+                    break;
+                case 'ARROWUP':
+                case 'W':
+                    e.preventDefault();
+                    rotateBlock();
+                    break;
+            }
+        }
+
+        // 旋转方块（横向变纵向，纵向变横向）
+        function rotateBlock() {
+            const tempWidth = currentBlock.width;
+            const tempHeight = currentBlock.height;
+
+            // 交换宽高
+            currentBlock.width = tempHeight;
+            currentBlock.height = tempWidth;
+
+            // 调整位置避免出界
+            if (currentBlock.x + currentBlock.width > COLS) {
+                currentBlock.x = COLS - currentBlock.width;
+            }
+            if (currentBlock.y + currentBlock.height > ROWS) {
+                currentBlock.y = ROWS - currentBlock.height;
+            }
+
+            // 检查碰撞
+            if (collision(currentBlock.x, currentBlock.y)) {
+                // 恢复原状
+                currentBlock.width = tempWidth;
+                currentBlock.height = tempHeight;
+                return;
+            }
+
+            draw();
+        }
+
+        // 绘制游戏画面
+        function draw() {
+            // 清空画布
+            ctx.fillStyle = '#F5F0FF';
+            ctx.fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
+
+            // 绘制网格
+            ctx.strokeStyle = '#E8DAEF';
+            ctx.lineWidth = 1;
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    ctx.strokeRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                }
+            }
+
+            // 绘制已锁定的方块
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (grid[r][c]) {
+                        drawCell(c, r, grid[r][c]);
+                    }
+                }
+            }
+
+            // 绘制当前方块
+            if (currentBlock) {
+                if (currentBlock.width > currentBlock.height) {
+                    // 横向绘制
+                    for (let c = 0; c < currentBlock.width; c++) {
+                        const x = currentBlock.x + c;
+                        const y = currentBlock.y;
+                        if (y >= 0 && x < COLS) {
+                            drawCell(x, y, {
+                                text: currentBlock.chars[c],
+                                color: currentBlock.data.type === 'head' ? '#9B59B6' : '#3498DB'
+                            });
+                        }
+                    }
+                } else {
+                    // 纵向绘制
+                    for (let r = 0; r < currentBlock.height; r++) {
+                        const x = currentBlock.x;
+                        const y = currentBlock.y + r;
+                        if (y >= 0 && y < ROWS) {
+                            drawCell(x, y, {
+                                text: currentBlock.chars[r],
+                                color: currentBlock.data.type === 'head' ? '#9B59B6' : '#3498DB'
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        // 绘制单元格
+        function drawCell(col, row, cell) {
+            const x = col * CELL_SIZE;
+            const y = row * CELL_SIZE;
+
+            // 绘制背景
+            ctx.fillStyle = cell.color;
+            ctx.fillRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+
+            // 绘制文字
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(cell.text, x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+        }
+
+        // 页面加载时初始化语音
+        window.addEventListener('load', function () {
+            // 预加载语音列表
+            window.speechSynthesis.getVoices();
+
+            // 监听语音列表变化
+            window.speechSynthesis.onvoiceschanged = function () {
+                window.speechSynthesis.getVoices();
+            };
+        });
+
+        // 完成关卡
+        function completeLevel() {
+            // 根据是否已有宠物判断当前是第几关
+            const currentLevel = hasPet ? 2 : 1;
+
+            updatePetAfterLevel(currentLevel);
+
+            // 根据关卡设置不同奖励
+            const rewardConfig = {
+                1: {
+                    image: '宠物图片素材/黄柴犬幼年-removebg.png',
+                    title: '小奶狗宝宝',
+                    desc: '快去宠物乐园看看吧！'
+                },
+                2: {
+                    image: '宠物图片素材/黄柴犬中期-removebg.png',
+                    title: '羊奶粉奶瓶',
+                    desc: '小奶狗宝宝开心地长大了一点！'
+                },
+                3: {
+                    image: '宠物图片素材/黄柴犬中型期-removebg.png',
+                    title: '狗粮',
+                    desc: '小奶狗又长大了一点！'
+                },
+                4: {
+                    image: '宠物图片素材/黄柴犬后期-removebg.png',
+                    title: '成年狗狗',
+                    desc: '小奶狗长大啦！'
+                }
+            };
+
+            const config = rewardConfig[currentLevel] || rewardConfig[1];
+            document.querySelector('#rewardImage img').src = config.image;
+            document.getElementById('rewardText').innerHTML = `获得了 <strong>${config.title}</strong>`;
+            document.getElementById('rewardDesc').textContent = config.desc;
+
+            document.getElementById('rewardModal').style.display = 'flex';
+        }
+
+        function closeReward() {
+            //document.getElementById('rewardModal').style.display = 'none';
+
+            // 完成关卡1，隐藏关卡1
+            //document.getElementById('frogGame').style.display = 'none';
+
+            // 进入第2关：诗词俄罗斯方块游戏确认组件
+            //document.getElementById('levelListPage').style.display = 'block';
+            //document.getElementById('tetrisConfirm').style.display = 'flex';
+
+            backToLevelListPre(POEM_READING);
+            document.getElementById('tetrisConfirm').style.display = 'flex';
+        }
+
+        // 进入俄罗斯方块确认界面
+        function tetrisConfirm() {
+            document.getElementById('tetrisConfirm').style.display = 'flex';
+        }
+
+        // 关闭俄罗斯方块确认界面
+        function tetrisConfirmClose() {
+            document.getElementById('tetrisConfirm').style.display = 'none';
+        }
+
+        // 确认按钮 - 只关闭弹窗
+        function confirmReward() {
+            document.getElementById('rewardModal').style.display = 'none';
+        }
+
+        // 进入第2关：诗词俄罗斯方块游戏
+        function enterLevel2() {
+            // 隐藏关卡列表页
+            var levelListPage = document.getElementById('levelListPage');
+            levelListPage.style.display = 'none';
+
+            // 切换到游戏页面
+            document.querySelector('.home-page').style.display = 'none';
+            document.querySelector('.game-page').style.display = 'block';
+            document.querySelector('.paradise-page').style.display = 'none';
+
+            // 隐藏小青蛙游戏，显示俄罗斯方块确认界面
+            document.getElementById('frogGame').style.display = 'none';
+            document.getElementById('tetrisConfirm').style.display = 'flex';
+
+            // 更新游戏标题
+            document.querySelector('.game-title').textContent = '🧱 诗词俄罗斯方块';
+        }
+
+        /* 迷宫游戏逻辑 */
+        // 显示迷宫确认界面
+        function mazeConfirm() {
+            document.getElementById('mazeConfirm').style.display = 'flex';
+        }
+        // 关闭迷宫确认界面
+        function mazeConfirmClose() {
+            document.getElementById('mazeConfirm').style.display = 'none';
+        }
+
+        // 开始诗词迷宫游戏
+        function startMazeGame() {
+            // 关闭确认弹窗
+            document.getElementById('mazeConfirm').style.display = 'none';
+            // 保存来源标记，用于 demo.html 返回
+            try {
+                sessionStorage.setItem('mazeReturnUrl', 'index.html');
+            } catch (e) {
+                // 忽略存储错误（隐私模式等）
+            }
+            // 跳转到 demo.html，并传递当前诗词的key
+            window.location.href = 'demo.html?poemKey=' + currentPoemKey;
+        }
+
+        // 用户设置功能
+        let selectedGender = 'girl';
+
+        function toggleUserMenu(avatarEl) {
+            const menu = avatarEl.querySelector('.user-menu');
+            if (menu) {
+                // 先关闭其他菜单
+                document.querySelectorAll('.user-menu').forEach(m => {
+                    if (m !== menu) {
+                        m.classList.remove('active');
+                    }
+                });
+                menu.classList.toggle('active');
+            }
+        }
+
+        function selectGender(event, optionEl, gender) {
+            // 阻止事件冒泡
+            event.stopPropagation();
+
+            selectedGender = gender;
+
+            // 获取当前菜单的父容器
+            const menu = optionEl.closest('.user-menu');
+
+            // 移除当前菜单中所有选中状态
+            menu.querySelectorAll('.gender-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // 添加选中状态
+            optionEl.classList.add('selected');
+
+            // 更新所有页面的头像
+            const avatars = document.querySelectorAll('.user-avatar');
+            avatars.forEach(avatar => {
+                const avatarEmoji = avatar.childNodes[0];
+                avatarEmoji.textContent = gender === 'boy' ? '👦' : '👧';
+            });
+        }
+
+        function saveUserSettings(event, btnEl) {
+            // 阻止事件冒泡
+            event.stopPropagation();
+
+            const menu = btnEl.closest('.user-menu');
+            const nameInput = menu.querySelector('.userNameInput');
+            const name = nameInput.value.trim();
+
+            if (name) {
+                // 更新所有页面的用户名字
+                const nameDisplays = document.querySelectorAll('.currentUserName');
+                nameDisplays.forEach(display => {
+                    display.textContent = '当前昵称：' + name;
+                });
+                alert('🎉 设置保存成功！你好，' + name + '！');
+            } else {
+                alert('请输入你的名字哦！');
+            }
+
+            // 关闭菜单
+            menu.classList.remove('active');
+        }
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', function (event) {
+            const menus = document.querySelectorAll('.user-menu');
+            menus.forEach(menu => {
+                const avatar = menu.closest('.user-avatar');
+                if (avatar && !avatar.contains(event.target)) {
+                    menu.classList.remove('active');
+                }
+            });
+        });
+
+        // 宠物状态管理
+        let hasPet = false;
+        let currentPet = null;
+        let petProgress = {
+            stage: 0, // 0: 未获得, 1: 小奶狗宝宝, 2: 幼犬, 3: 成年狗
+            growth: 0,
+            happiness: 100
+        };
+
+        // 更新宠物显示状态
+        function updatePetDisplay() {
+            const noPet = document.getElementById('noPet');
+            const hasPetDiv = document.getElementById('hasPet');
+
+            if (hasPet && currentPet) {
+                // 显示已获得的宠物
+                noPet.style.display = 'none';
+                hasPetDiv.style.display = 'block';
+
+                // 更新宠物信息
+                const stages = ['小奶狗宝宝', '幼犬', '成年狗'];
+                const emojis = ['🐶', '🐕', '🐕'];
+
+                document.getElementById('petTitle').textContent = '🐕 我的' + stages[petProgress.stage - 1];
+                document.getElementById('petImage').textContent = emojis[petProgress.stage - 1];
+                document.getElementById('petStage').textContent = stages[petProgress.stage - 1];
+                document.getElementById('petGrowth').textContent = petProgress.growth + '%';
+                document.getElementById('petHappiness').textContent = petProgress.happiness + '%';
+            } else {
+                // 显示未获得宠物状态
+                noPet.style.display = 'block';
+                hasPetDiv.style.display = 'none';
+            }
+        }
+
+        // 完成关卡后更新宠物状态
+        function updatePetAfterLevel(level) {
+            if (level === 1) {
+                // 第一关完成，获得小奶狗宝宝
+                hasPet = true;
+                currentPet = 'dog';
+                petProgress.stage = 1;
+                petProgress.growth = 0;
+                petProgress.happiness = 100;
+            } else if (level === 2) {
+                // 第二关完成，使用奶瓶，宠物成长
+                petProgress.growth = 33;
+                petProgress.happiness = 100;
+            } else if (level === 3) {
+                // 第三关完成，使用狗粮，宠物成长
+                petProgress.growth = 66;
+                petProgress.happiness = 100;
+            } else if (level === 4) {
+                // 第四关完成，宠物成年，进入乐园
+                petProgress.stage = 3;
+                petProgress.growth = 100;
+                petProgress.happiness = 100;
+            }
+
+            updatePetDisplay();
+        }
+
+        // 页面加载时初始化宠物显示
+        window.onload = function () {
+            updatePetDisplay();
+        };
+    </script>
+</body>
+
+</html>
