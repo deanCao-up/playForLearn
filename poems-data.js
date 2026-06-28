@@ -100,7 +100,7 @@ poems.set('MinNong', new Poem({
         "粒粒|皆辛苦"
     ],
     pinyin: 'MinNong',
-    icon: '🌾',
+    icon: '🧑‍🌾',
     headLength: 2,
     tailLength: 3
 }));
