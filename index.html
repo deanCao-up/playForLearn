@@ -3,73 +3,95 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>诗词游戏</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         body {
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
             background: linear-gradient(135deg, #FFE4E1 0%, #E6E6FA 50%, #E0FFE0 100%);
             min-height: 100vh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* 导航栏 */
         .navbar {
             background: linear-gradient(90deg, #FF69B4, #9370DB);
-            padding: 15px 30px;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo {
             display: flex;
             align-items: center;
             color: white;
-            font-size: 24px;
+            font-size: clamp(18px, 5vw, 24px);
             font-weight: bold;
+            gap: 8px;
         }
 
         .logo img {
-            width: 40px;
-            margin-right: 10px;
+            width: clamp(30px, 8vw, 40px);
         }
 
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: clamp(36px, 10vw, 44px);
+            height: clamp(36px, 10vw, 44px);
             border-radius: 50%;
             background: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: clamp(18px, 5vw, 22px);
             cursor: pointer;
             position: relative;
+            flex-shrink: 0;
         }
 
         /* 用户设置下拉框 */
         .user-menu {
             display: none;
             position: absolute;
-            top: 55px;
+            top: calc(100% + 8px);
             right: 0;
             background: white;
             border-radius: 15px;
-            padding: 20px;
-            min-width: 280px;
+            padding: 15px;
+            min-width: 260px;
+            max-width: 90vw;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             z-index: 200;
         }
@@ -822,6 +844,135 @@
             min-height: 400px;
         }
 
+        /* 俄罗斯方块移动端适配 */
+        @media (max-width: 1024px) {
+            .tetris-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .tetris-play-area {
+                padding: 10px;
+            }
+
+            #tetrisCanvas {
+                width: 100%;
+                max-width: 450px;
+                height: auto;
+            }
+
+            .tetris-poem-area {
+                width: 100%;
+                max-width: 450px;
+                min-height: auto;
+            }
+
+            .tetris-touch-btn,
+            .tetris-pause-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 26px;
+            }
+
+            .tetris-touch-row {
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tetris-play-area {
+                padding: 5px;
+            }
+
+            #tetrisCanvas {
+                max-width: 380px;
+            }
+
+            .tetris-poem-area {
+                padding: 15px;
+                max-width: 380px;
+            }
+
+            .tetris-touch-btn,
+            .tetris-pause-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+
+            .tetris-touch-row {
+                gap: 6px;
+            }
+
+            .tetris-touch-controls {
+                margin-top: 10px;
+            }
+
+            .tetris-touch-label {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #tetrisCanvas {
+                max-width: 320px;
+            }
+
+            .tetris-poem-area {
+                padding: 12px;
+                max-width: 320px;
+            }
+
+            .tetris-touch-btn,
+            .tetris-pause-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+            }
+
+            .tetris-touch-row {
+                gap: 5px;
+            }
+
+            .tetris-poem-area h3 {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+
+            .tetris-poem-area p {
+                font-size: 14px;
+                margin: 8px 0;
+            }
+
+            .completed-line {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #tetrisCanvas {
+                max-width: 280px;
+            }
+
+            .tetris-poem-area {
+                padding: 10px;
+                max-width: 280px;
+            }
+
+            .tetris-touch-btn,
+            .tetris-pause-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 18px;
+            }
+
+            .tetris-touch-row {
+                gap: 4px;
+            }
+        }
+
         .tetris-poem-area h3 {
             color: #9B59B6;
             margin-bottom: 15px;
@@ -1238,27 +1389,268 @@
             cursor: pointer;
         }
 
-        /* 响应式设计 */
-        @media (max-width: 768px) {
+        /* 平板端适配 (768px - 1024px) */
+        @media (max-width: 1024px) {
             .navbar {
-                padding: 12px 20px;
-            }
-
-            .logo {
-                font-size: 20px;
+                padding: 12px 16px;
             }
 
             .main-content {
-                padding: 20px;
-            }
-
-            .pet-info {
-                gap: 15px;
+                padding: 20px 16px;
             }
 
             .game-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 16px;
+            }
+
+            .pet-card {
+                padding: 20px;
+            }
+
+            .pet-display {
+                padding: 25px;
+            }
+
+            .pet-image {
+                font-size: 70px;
+            }
+
+            .pet-gallery {
+                gap: 20px;
+            }
+        }
+
+        /* 手机端适配 (最大768px) */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 10px 12px;
+            }
+
+            .logo {
+                font-size: clamp(16px, 4.5vw, 20px);
+            }
+
+            .logo img {
+                width: clamp(26px, 7vw, 36px);
+            }
+
+            .main-content {
+                padding: 15px 12px;
+            }
+
+            .pet-card {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .pet-card h2 {
+                font-size: clamp(18px, 4.5vw, 22px);
+            }
+
+            .pet-display {
+                padding: 20px 15px;
+                min-height: 160px;
+            }
+
+            .pet-image {
+                font-size: clamp(50px, 15vw, 80px);
+                margin-bottom: 10px;
+            }
+
+            .pet-info {
+                gap: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .info-item {
+                min-width: 60px;
+            }
+
+            .info-item .value {
+                font-size: 16px;
+            }
+
+            .no-pet h2 {
+                font-size: clamp(18px, 4.5vw, 24px);
+            }
+
+            .welcome-text {
+                font-size: clamp(14px, 3.5vw, 18px);
+                margin-bottom: 20px;
+            }
+
+            .pet-gallery {
                 gap: 15px;
+            }
+
+            .pet-avatar {
+                font-size: clamp(50px, 15vw, 80px);
+            }
+
+            .game-section h2 {
+                font-size: clamp(18px, 4.5vw, 22px);
+                margin-bottom: 15px;
+            }
+
+            .game-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 12px;
+            }
+
+            .game-card {
+                padding: 20px 15px;
+            }
+
+            .game-card h3 {
+                font-size: clamp(16px, 4vw, 18px);
+            }
+
+            .game-card p {
+                font-size: clamp(12px, 3vw, 14px);
+            }
+
+            .game-horizontal-card {
+                padding: 16px 20px;
+                width: 100%;
+            }
+
+            .game-horizontal-card h3 {
+                font-size: clamp(16px, 4vw, 18px);
+            }
+
+            .game-horizontal-card p {
+                font-size: clamp(12px, 3vw, 14px);
+            }
+
+            .level-list-container {
+                padding: 20px 12px;
+            }
+
+            .level-list-container h2 {
+                font-size: clamp(20px, 5vw, 24px);
+                margin-bottom: 20px;
+            }
+
+            .level-list {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 12px;
+            }
+
+            .level-card {
+                padding: 18px 15px;
+            }
+
+            .level-name {
+                font-size: clamp(16px, 4vw, 18px);
+            }
+
+            .level-desc {
+                font-size: clamp(12px, 3vw, 14px);
+            }
+        }
+
+        /* 小屏手机适配 (最大480px) */
+        @media (max-width: 480px) {
+            body {
+                padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+            }
+
+            .navbar {
+                padding: 8px 10px;
+            }
+
+            .main-content {
+                padding: 12px 10px;
+            }
+
+            .pet-card {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+
+            .pet-display {
+                padding: 15px 10px;
+                min-height: 140px;
+            }
+
+            .pet-image {
+                font-size: clamp(40px, 18vw, 60px);
+            }
+
+            .pet-info {
+                gap: 8px;
+            }
+
+            .pet-gallery {
+                gap: 10px;
+            }
+
+            .pet-avatar {
+                font-size: clamp(40px, 18vw, 60px);
+            }
+
+            .game-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 10px;
+            }
+
+            .game-card {
+                padding: 15px 10px;
+            }
+
+            .level-list {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .level-card {
+                padding: 15px 10px;
+            }
+
+            .level-number {
+                font-size: 14px;
+                padding: 6px 15px;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* 极小屏手机适配 (最大360px) */
+        @media (max-width: 360px) {
+            .game-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .game-card {
+                padding: 12px 8px;
+            }
+
+            .game-card h3 {
+                font-size: 14px;
+            }
+
+            .game-card p {
+                font-size: 11px;
+            }
+
+            .level-list {
+                grid-template-columns: 1fr;
+            }
+
+            .pet-info {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .info-item {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                padding: 5px 0;
+                border-bottom: 1px dashed #eee;
             }
         }
 

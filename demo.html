@@ -3,12 +3,26 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>📜 诗词迷宫 · 小青蛙</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         body {
@@ -17,9 +31,11 @@
             background: linear-gradient(145deg, #1b4a2e 0%, #2d6a4f 100%);
             display: flex;
             justify-content: center;
-            align-items: center;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Quicksand', cursive, sans-serif;
+            align-items: flex-start;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'Comic Sans MS', 'Chalkboard SE', 'Quicksand', cursive, sans-serif;
             padding: 16px;
+            padding-top: calc(env(safe-area-inset-top) + 16px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
         }
 
         .game-wrapper {
@@ -30,6 +46,7 @@
             border: 4px solid #409f7a;
             max-width: 780px;
             width: 100%;
+            margin-top: 20px;
             transition: all 0.2s;
         }
 
@@ -551,100 +568,257 @@
             box-shadow: 0 2px 0 #d4a02b;
         }
 
-        /* 响应式 */
-        @media (max-width: 600px) {
+        /* 平板端适配 (768px - 1024px) */
+        @media (max-width: 1024px) {
             .game-wrapper {
-                padding: 16px 14px 20px;
-                border-radius: 40px;
+                padding: 20px 24px 28px;
+                border-radius: 50px;
+                max-width: 90%;
+            }
+
+            .header {
+                padding: 6px 16px 6px 12px;
+                margin-bottom: 14px;
+                flex-wrap: wrap;
+                gap: 6px;
             }
 
             .title {
-                font-size: 1.2rem;
+                font-size: 1.4rem;
             }
 
             .title span {
-                font-size: 1rem;
+                font-size: 1.2rem;
             }
 
             .progress-box {
+                font-size: 1.1rem;
+            }
+
+            .poem-display {
+                font-size: 1.4rem;
+            }
+
+            .cell {
                 font-size: 1rem;
+            }
+
+            .cell .frog {
+                font-size: 1.2rem;
+            }
+
+            .ctrl-btn {
+                width: 56px;
+                height: 56px;
+                font-size: 2rem;
+            }
+        }
+
+        /* 手机端适配 (最大768px) */
+        @media (max-width: 768px) {
+            .game-wrapper {
+                padding: 16px 14px 20px;
+                border-radius: 40px;
+                max-width: 95%;
+            }
+
+            .header {
+                padding: 6px 14px 6px 10px;
+                margin-bottom: 12px;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: center;
+            }
+
+            .title {
+                font-size: clamp(1rem, 3.5vw, 1.3rem);
+            }
+
+            .title span {
+                font-size: clamp(0.9rem, 3vw, 1.1rem);
+            }
+
+            .progress-box {
+                font-size: clamp(0.9rem, 2.5vw, 1.1rem);
                 padding: 2px 12px 2px 10px;
             }
 
             .progress-box .step-num {
-                width: 28px;
-                height: 28px;
-                font-size: 0.9rem;
+                width: clamp(24px, 6vw, 28px);
+                height: clamp(24px, 6vw, 28px);
+                font-size: clamp(0.8rem, 2vw, 0.9rem);
             }
 
             .poem-display {
-                font-size: 1.2rem;
+                font-size: clamp(1rem, 3vw, 1.3rem);
                 padding: 8px 12px;
-                min-height: 52px;
+                min-height: 48px;
             }
 
             .cell {
-                font-size: 0.9rem;
+                font-size: clamp(0.8rem, 2.5vw, 1rem);
                 border-radius: 4px;
+                padding: 4px;
             }
 
             .cell .frog {
-                font-size: 1rem;
+                font-size: clamp(0.9rem, 3vw, 1.2rem);
             }
 
             .cell .poem-label {
-                font-size: 0.7rem;
+                font-size: clamp(0.6rem, 2vw, 0.8rem);
             }
 
             .ctrl-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 1.8rem;
+                width: clamp(44px, 12vw, 56px);
+                height: clamp(44px, 12vw, 56px);
+                font-size: clamp(1.5rem, 4vw, 2.2rem);
             }
 
             .ctrl-btn.reset-btn {
-                width: 60px;
-                font-size: 1.2rem;
+                width: clamp(52px, 14vw, 64px);
+                font-size: clamp(1rem, 2.5vw, 1.3rem);
             }
 
             .win-card {
-                padding: 28px 20px 32px;
+                padding: 24px 16px 28px;
             }
 
             .win-card h2 {
-                font-size: 1.8rem;
+                font-size: clamp(1.5rem, 4vw, 2rem);
             }
 
             .win-card .poem-full {
-                font-size: 1rem;
-                padding: 12px 14px;
+                font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+                padding: 10px 12px;
             }
         }
 
-        @media (max-width: 420px) {
-            .cell .frog {
-                font-size: 0.9rem;
+        /* 小屏手机适配 (最大480px) */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                padding-top: calc(env(safe-area-inset-top) + 10px);
+                padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
             }
 
-            .cell .poem-label {
-                font-size: 0.6rem;
-                padding: 0 2px;
+            .game-wrapper {
+                padding: 12px 10px 16px;
+                border-radius: 30px;
+            }
+
+            .header {
+                padding: 5px 10px 5px 8px;
+                margin-bottom: 10px;
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: center;
+            }
+
+            .title {
+                font-size: clamp(0.9rem, 4vw, 1.2rem);
+            }
+
+            .title span {
+                font-size: clamp(0.8rem, 3.5vw, 1rem);
+                padding: 0 8px;
+            }
+
+            .progress-box {
+                font-size: clamp(0.8rem, 2.5vw, 1rem);
+                padding: 2px 8px;
             }
 
             .poem-display {
-                font-size: 1rem;
+                font-size: clamp(0.9rem, 3vw, 1.2rem);
                 min-height: 44px;
+                padding: 6px 10px;
+            }
+
+            .cell {
+                font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+                padding: 3px;
+            }
+
+            .cell .frog {
+                font-size: clamp(0.8rem, 3vw, 1.1rem);
+            }
+
+            .cell .poem-label {
+                font-size: clamp(0.55rem, 1.8vw, 0.7rem);
+                padding: 0 2px;
             }
 
             .ctrl-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 1.5rem;
+                width: clamp(40px, 11vw, 48px);
+                height: clamp(40px, 11vw, 48px);
+                font-size: clamp(1.3rem, 3.5vw, 1.8rem);
             }
 
             .ctrl-btn.reset-btn {
-                width: 52px;
-                font-size: 1rem;
+                width: clamp(48px, 13vw, 56px);
+                font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            }
+        }
+
+        /* 极小屏手机适配 (最大360px) */
+        @media (max-width: 360px) {
+            .game-wrapper {
+                padding: 10px 8px 14px;
+                border-radius: 24px;
+            }
+
+            .header {
+                padding: 4px 8px 4px 6px;
+                margin-bottom: 8px;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .title {
+                font-size: clamp(0.8rem, 4vw, 1rem);
+                gap: 6px;
+            }
+
+            .title span {
+                font-size: clamp(0.7rem, 3vw, 0.9rem);
+                padding: 0 6px;
+            }
+
+            .progress-box {
+                font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+                padding: 2px 6px;
+                gap: 8px;
+            }
+
+            .poem-display {
+                font-size: clamp(0.8rem, 3vw, 1rem);
+                min-height: 38px;
+                padding: 4px 8px;
+            }
+
+            .cell {
+                font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+                padding: 2px;
+            }
+
+            .cell .frog {
+                font-size: clamp(0.7rem, 3vw, 1rem);
+            }
+
+            .cell .poem-label {
+                font-size: clamp(0.5rem, 1.8vw, 0.6rem);
+            }
+
+            .ctrl-btn {
+                width: clamp(36px, 10vw, 44px);
+                height: clamp(36px, 10vw, 44px);
+                font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+            }
+
+            .ctrl-btn.reset-btn {
+                width: clamp(44px, 12vw, 52px);
+                font-size: clamp(0.8rem, 2.5vw, 1rem);
             }
         }
 
@@ -1614,25 +1788,56 @@
                 bindEvents: function () {
                     document.addEventListener('keydown', this.handleKey.bind(this));
 
-                    document.getElementById('btnUp').addEventListener('click', () => {
-                        this.tryMove(GameState.playerRow - 1, GameState.playerCol);
-                    });
-                    document.getElementById('btnDown').addEventListener('click', () => {
-                        this.tryMove(GameState.playerRow + 1, GameState.playerCol);
-                    });
-                    document.getElementById('btnLeft').addEventListener('click', () => {
-                        this.tryMove(GameState.playerRow, GameState.playerCol - 1);
-                    });
-                    document.getElementById('btnRight').addEventListener('click', () => {
-                        this.tryMove(GameState.playerRow, GameState.playerCol + 1);
-                    });
+                    const moveUp = () => this.tryMove(GameState.playerRow - 1, GameState.playerCol);
+                    const moveDown = () => this.tryMove(GameState.playerRow + 1, GameState.playerCol);
+                    const moveLeft = () => this.tryMove(GameState.playerRow, GameState.playerCol - 1);
+                    const moveRight = () => this.tryMove(GameState.playerRow, GameState.playerCol + 1);
+
+                    document.getElementById('btnUp').addEventListener('click', moveUp);
+                    document.getElementById('btnUp').addEventListener('touchstart', (e) => { e.preventDefault(); moveUp(); }, { passive: false });
+                    document.getElementById('btnDown').addEventListener('click', moveDown);
+                    document.getElementById('btnDown').addEventListener('touchstart', (e) => { e.preventDefault(); moveDown(); }, { passive: false });
+                    document.getElementById('btnLeft').addEventListener('click', moveLeft);
+                    document.getElementById('btnLeft').addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(); }, { passive: false });
+                    document.getElementById('btnRight').addEventListener('click', moveRight);
+                    document.getElementById('btnRight').addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(); }, { passive: false });
+
                     document.getElementById('btnReset').addEventListener('click', this.resetGame.bind(this));
+                    document.getElementById('btnReset').addEventListener('touchstart', (e) => { e.preventDefault(); this.resetGame(); }, { passive: false });
                     document.getElementById('btnBack').addEventListener('click', this.goBack.bind(this));
+                    document.getElementById('btnBack').addEventListener('touchstart', (e) => { e.preventDefault(); this.goBack(); }, { passive: false });
                     document.getElementById('btnReplay').addEventListener('click', this.resetGame.bind(this));
+                    document.getElementById('btnReplay').addEventListener('touchstart', (e) => { e.preventDefault(); this.resetGame(); }, { passive: false });
 
                     document.body.addEventListener('touchmove', function (e) {
                         e.preventDefault();
                     }, { passive: false });
+
+                    let touchStartX = 0;
+                    let touchStartY = 0;
+                    const touchThreshold = 30;
+
+                    document.addEventListener('touchstart', (e) => {
+                        touchStartX = e.touches[0].clientX;
+                        touchStartY = e.touches[0].clientY;
+                    }, { passive: true });
+
+                    document.addEventListener('touchend', (e) => {
+                        const touchEndX = e.changedTouches[0].clientX;
+                        const touchEndY = e.changedTouches[0].clientY;
+                        const deltaX = touchEndX - touchStartX;
+                        const deltaY = touchEndY - touchStartY;
+
+                        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                            if (Math.abs(deltaX) > touchThreshold) {
+                                deltaX > 0 ? moveRight() : moveLeft();
+                            }
+                        } else {
+                            if (Math.abs(deltaY) > touchThreshold) {
+                                deltaY > 0 ? moveDown() : moveUp();
+                            }
+                        }
+                    }, { passive: true });
                 },
 
                 tryMove: function (targetRow, targetCol) {
