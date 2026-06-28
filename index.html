@@ -729,6 +729,90 @@
             margin: 5px 0;
         }
 
+        /* 俄罗斯方块触摸控制按钮 */
+        .tetris-touch-controls {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tetris-touch-btn {
+            background: white;
+            border: 2px solid #9B59B6;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #7D3C98;
+            transition: all 0.1s ease;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .tetris-touch-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #7D3C98;
+        }
+
+        .tetris-touch-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tetris-touch-btn.rotate-btn {
+            border-color: #3498DB;
+            box-shadow: 0 4px 0 #1F618D;
+        }
+
+        .tetris-touch-btn.rotate-btn:active {
+            box-shadow: 0 1px 0 #1F618D;
+        }
+
+        .tetris-touch-btn.down-btn {
+            border-color: #E74C3C;
+            box-shadow: 0 4px 0 #922B21;
+        }
+
+        .tetris-touch-btn.down-btn:active {
+            box-shadow: 0 1px 0 #922B21;
+        }
+
+        .tetris-pause-btn {
+            background: white;
+            border: 2px solid #F39C12;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #D68910;
+            transition: all 0.1s ease;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .tetris-pause-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #D68910;
+        }
+
+        .tetris-touch-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
         .tetris-poem-area {
             background: white;
             padding: 20px;
@@ -1294,11 +1378,11 @@
                     <h2>🐾 可领养的宠物</h2>
                     <p class="welcome-text">小朋友，快去玩游戏领养宠物吧</p>
                     <div class="pet-gallery">
-                        <div class="pet-avatar pet-avatar-1"><img src="宠物图片素材/黄柴犬后期-removebg.png" alt="小柴狗"></div>
-                        <div class="pet-avatar pet-avatar-2"><img src="宠物图片素材/三花猫幼年-removebg.png" alt="三花猫"></div>
-                        <div class="pet-avatar pet-avatar-3"><img src="宠物图片素材/兔子中期-removebg.png" alt="小兔子"></div>
-                        <div class="pet-avatar pet-avatar-4"><img src="宠物图片素材/仓鼠幼年-removebg.png" alt="小仓鼠"></div>
-                        <div class="pet-avatar pet-avatar-5"><img src="宠物图片素材/熊猫中期-removebg.png" alt="小熊猫"></div>
+                        <div class="pet-avatar pet-avatar-1" style="font-size: 120px;">🐕</div>
+                        <div class="pet-avatar pet-avatar-2" style="font-size: 120px;">🐱</div>
+                        <div class="pet-avatar pet-avatar-3" style="font-size: 120px;">🐰</div>
+                        <div class="pet-avatar pet-avatar-4" style="font-size: 120px;">🐹</div>
+                        <div class="pet-avatar pet-avatar-5" style="font-size: 120px;">🐼</div>
                     </div>
                 </div>
 
@@ -1306,7 +1390,7 @@
                 <div class="has-pet" id="hasPet" style="display: none;">
                     <h2 id="petTitle">🐕 我的小奶狗宝宝</h2>
                     <div class="pet-display">
-                        <div class="pet-image" id="petImage"><img src="宠物图片素材/黄柴犬-removebg.png" alt="小柴狗宝宝"></div>
+                        <div class="pet-image" id="petImage" style="font-size: 120px;">🐕</div>
                         <div class="pet-info">
                             <div class="info-item">
                                 <span>成长阶段</span>
@@ -1549,9 +1633,17 @@
                 <!-- 左侧游戏区域 -->
                 <div class="tetris-play-area">
                     <canvas id="tetrisCanvas" width="540" height="720"></canvas>
-                    <button id="pauseBtn" onclick="pauseTetris()"
-                        style="display: block; margin: 10px auto 0; background: none; border: none; cursor: pointer; font-size: 40px;">⏸️
-                    </button>
+                    <!-- 触摸控制按钮 - 五个按钮在同一行 -->
+                    <div class="tetris-touch-controls">
+                        <div class="tetris-touch-row">
+                            <button id="pauseBtn" class="tetris-pause-btn" onclick="pauseTetris()">⏸️</button>
+                            <button class="tetris-touch-btn rotate-btn" onclick="touchRotate()">🔄</button>
+                            <button class="tetris-touch-btn" onclick="touchMoveLeft()">⬅️</button>
+                            <button class="tetris-touch-btn down-btn" onclick="touchMoveDown()">⬇️</button>
+                            <button class="tetris-touch-btn" onclick="touchMoveRight()">➡️</button>
+                        </div>
+                        <p class="tetris-touch-label">暂停 | 旋转 | 左移 | 下落 | 右移</p>
+                    </div>
                 </div>
 
                 <!-- 右侧诗词展示区域 -->
@@ -1657,7 +1749,7 @@
                 <button onclick="confirmReward()"
                     style="position: absolute; top: 5px; right: 10px; background: none; border: none; font-size: 20px; color: #666; cursor: pointer;">✕</button>
                 <div class="reward-image" id="rewardImage">
-                    <img src="宠物图片素材/黄柴犬幼年-removebg.png" alt="小奶狗" class="pet-reward-img">
+                    <span class="pet-reward-img" style="font-size: 150px;">🐕</span>
                 </div>
                 <h3>🎉 恭喜获得奖励！</h3>
                 <p id="rewardText">获得了 <strong>小奶狗宝宝</strong></p>
@@ -2900,6 +2992,27 @@
             }
         }
 
+        // 触摸控制函数
+        function touchMoveLeft() {
+            if (isGameOver || !currentBlock) return;
+            moveBlock(-1, 0);
+        }
+
+        function touchMoveRight() {
+            if (isGameOver || !currentBlock) return;
+            moveBlock(1, 0);
+        }
+
+        function touchMoveDown() {
+            if (isGameOver || !currentBlock) return;
+            moveBlock(0, 1);
+        }
+
+        function touchRotate() {
+            if (isGameOver || !currentBlock) return;
+            rotateBlock();
+        }
+
         // 旋转方块（横向变纵向，纵向变横向）
         function rotateBlock() {
             const tempWidth = currentBlock.width;
@@ -3012,37 +3125,38 @@
 
         // 完成关卡
         function completeLevel() {
-            // 根据是否已有宠物判断当前是第几关
             const currentLevel = hasPet ? 2 : 1;
 
             updatePetAfterLevel(currentLevel);
 
-            // 根据关卡设置不同奖励
             const rewardConfig = {
                 1: {
-                    image: '宠物图片素材/黄柴犬幼年-removebg.png',
+                    emoji: '🐕',
                     title: '小奶狗宝宝',
                     desc: '快去宠物乐园看看吧！'
                 },
                 2: {
-                    image: '宠物图片素材/黄柴犬中期-removebg.png',
+                    emoji: '🐕',
                     title: '羊奶粉奶瓶',
                     desc: '小奶狗宝宝开心地长大了一点！'
                 },
                 3: {
-                    image: '宠物图片素材/黄柴犬中型期-removebg.png',
+                    emoji: '🐕',
                     title: '狗粮',
                     desc: '小奶狗又长大了一点！'
                 },
                 4: {
-                    image: '宠物图片素材/黄柴犬后期-removebg.png',
+                    emoji: '🐕',
                     title: '成年狗狗',
                     desc: '小奶狗长大啦！'
                 }
             };
 
             const config = rewardConfig[currentLevel] || rewardConfig[1];
-            document.querySelector('#rewardImage img').src = config.image;
+            const rewardImg = document.querySelector('#rewardImage span');
+            if (rewardImg) {
+                rewardImg.textContent = config.emoji;
+            }
             document.getElementById('rewardText').innerHTML = `获得了 <strong>${config.title}</strong>`;
             document.getElementById('rewardDesc').textContent = config.desc;
 
